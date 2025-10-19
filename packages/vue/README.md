@@ -1,119 +1,70 @@
 # @nura/vue
 
-Vue adapter for Nura.js - Make your Vue apps AI-friendly.
+Adaptador oficial de Vue 3 para Nura.js. Expone un instalador minimalista y directivas reactivas para marcar el árbol del DOM con metadatos de Nura.
 
-## Installation
+## Instalación
 
-\`\`\`bash
-npm install @nura/vue @nura/core @nura/dom
-# or
-pnpm add @nura/vue @nura/core @nura/dom
-\`\`\`
+```bash
+pnpm add @nura/vue @nura/core vue
+```
 
-## Usage
+## Uso rápido
 
-### Setup Plugin
-
-\`\`\`typescript
+```ts
 import { createApp } from 'vue'
-import { NuraPlugin } from '@nura/vue'
 import App from './App.vue'
+import { Nura, createRegistry } from '@nura/core'
+import { withVue } from '@nura/vue'
+
+const registry = createRegistry({ config: { app: { id: 'demo-nura' } } })
+const nura = new Nura({ registry })
 
 const app = createApp(App)
-
-app.use(NuraPlugin, {
-  config: {
-    debug: true
-  }
-})
+withVue(nura).install(app)
+nura.start()
 
 app.mount('#app')
-\`\`\`
+```
 
-### Register Actions
+### `v-nu-listen`
 
-\`\`\`vue
-<script setup>
-import { useNuraAction } from '@nura/vue'
+Marca nodos que deben indexarse como oyentes dentro de Nura.
 
-useNuraAction({
-  verb: 'open',
-  scope: 'modal',
-  handler: () => {
-    console.log('Opening modal')
-  }
-})
-</script>
-\`\`\`
+```vue
+<section v-nu-listen.soft.scope="'ui'">
+  ...
+</section>
+```
 
-### Use Directives
+- Añade `data-nu-listen="dom"`.
+- `v-nu-listen.soft` fuerza `data-nu-priority="soft"`.
+- `v-nu-listen.deep` fuerza `data-nu-priority="hard"`.
+- `v-nu-listen:scope="'ui'"` añade `data-nu-scope="ui"`.
 
-\`\`\`vue
-<template>
-  <div v-nura="{ scope: 'form', listen: ['submit'] }">
-    <button v-nura="{ scope: 'submit-button', act: ['click'] }">
-      Submit
-    </button>
-  </div>
-</template>
-\`\`\`
+### `v-nu-act`
 
-### Use Composables
+Conecta elementos interactivos con acciones de Nura. Serializa la acción en `data-nu-act`, rellena `data-nu-desc` cuando la acción expone `meta.desc` (o `description` en acciones legadas) y dispara `nura.act(...)` en el click.
 
-\`\`\`vue
-<script setup>
-import { useNuraElement } from '@nura/vue'
+```vue
+<button
+  v-nu-act="{ type: 'open', target: 'menu:orders', meta: { desc: 'Abrir menú de órdenes' } }"
+  aria-label="Abrir menú de órdenes"
+>
+  Órdenes
+</button>
+```
 
-const buttonRef = useNuraElement({
-  scope: 'submit-button',
-  act: ['click', 'submit']
-})
-</script>
+En desarrollo, si `data-nu-act` está presente pero el elemento no tiene `aria-label`, `aria-labelledby` o `data-nu-desc`, se emite un `console.warn` para ayudar con la accesibilidad.
 
-<template>
-  <button ref="buttonRef">Submit</button>
-</template>
-\`\`\`
+## Demo
 
-### Use Components
+Incluimos un ejemplo con Vite en `apps/vue-demo` que muestra un botón con `v-nu-act` y un contenedor con `v-nu-listen`. Ejecuta:
 
-\`\`\`vue
-<template>
-  <NuraElement scope="form" :listen="['submit']">
-    <NuraElement scope="submit-button" :act="['click']" as="button">
-      Submit
-    </NuraElement>
-  </NuraElement>
-</template>
+```bash
+pnpm --filter nura-vue-demo install
+pnpm --filter nura-vue-demo run dev
+```
 
-<script setup>
-import { NuraElement } from '@nura/vue'
-</script>
-\`\`\`
-
-## API
-
-### Plugin
-
-- \`NuraPlugin\` - Vue plugin for global installation
-
-### Composables
-
-- \`useNura()\` - Access registry and indexer
-- \`useNuraAction(options)\` - Register actions
-- \`useNuraElement(options)\` - Mark elements with Nura attributes
-- \`useNuraPermission(options)\` - Add permissions
-- \`useHasPermission(verb, scope)\` - Check permissions
-- \`useNuraEvent(type, listener)\` - Listen to Nura events
-
-### Directives
-
-- \`v-nura\` - Add Nura attributes to elements
-
-### Components
-
-- \`<NuraElement>\` - Generic element wrapper
-
-## License
+## Licencia
 
 MIT
