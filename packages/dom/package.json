@@ -13,8 +13,8 @@
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts",
-    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "build": "tsup src/index.ts --format cjs,esm --dts --treeshake --minify",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --treeshake --watch",
     "lint": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
