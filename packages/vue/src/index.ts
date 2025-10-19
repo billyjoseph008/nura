@@ -8,7 +8,34 @@ type NuActElement = HTMLElement & {
   __nuActDescManaged__?: boolean
 }
 
+type GuardBinding = {
+  scope: string
+  action: string
+  when?: 'always' | 'auto'
+  hideIfForbidden?: boolean
+  disabledStyle?: boolean
+}
+
+type NuGuardElement = NuActElement & {
+  __nuGuardOriginalDisplay__?: string | null
+  __nuGuardOriginalPointerEvents__?: string | null
+  __nuGuardOriginalOpacity__?: string | null
+  __nuGuardWrappedOriginal__?: EventListener
+  __nuGuardWrappedHandler__?: EventListener
+}
+
 export const NURA_KEY: InjectionKey<Nura> = Symbol('nura')
+
+function hasRoleFor(nura: Nura, scope: string, action: string): boolean {
+  const perms = (nura as any)['#registry']?.permissions ?? (nura as any)['registry']?.permissions
+  const actor = (nura as any)['registry']?.config?.actor?.()
+  const rule = perms?.scopes?.[scope]?.[action]
+  if (!rule) return true
+  const roles = new Set(actor?.roles ?? [])
+  const need: string[] = rule.roles ?? []
+  if (need.length === 0) return true
+  return need.some((role) => roles.has(role))
+}
 
 function ensureA11y(el: HTMLElement) {
   const mode = (import.meta as ImportMetaWithEnv).env?.MODE
@@ -115,6 +142,118 @@ export function withVue(nura: Nura) {
             element.removeAttribute('data-nu-desc')
             delete el.__nuActDescManaged__
           }
+        }
+      })
+
+      function applyGuardAccess(el: NuGuardElement, opts: GuardBinding, can: boolean) {
+        if (!can) {
+          if (opts.hideIfForbidden) {
+            if (el.__nuGuardOriginalDisplay__ === undefined) {
+              el.__nuGuardOriginalDisplay__ = el.style.display
+            }
+            el.style.display = 'none'
+          } else if (opts.disabledStyle !== false) {
+            if (el.__nuGuardOriginalPointerEvents__ === undefined) {
+              el.__nuGuardOriginalPointerEvents__ = el.style.pointerEvents
+            }
+            if (el.__nuGuardOriginalOpacity__ === undefined) {
+              el.__nuGuardOriginalOpacity__ = el.style.opacity
+            }
+            el.setAttribute('aria-disabled', 'true')
+            el.style.pointerEvents = 'none'
+            el.style.opacity = '0.55'
+          }
+          return
+        }
+
+        if (opts.hideIfForbidden) {
+          if (el.__nuGuardOriginalDisplay__ !== undefined) {
+            el.style.display = el.__nuGuardOriginalDisplay__ ?? ''
+            delete el.__nuGuardOriginalDisplay__
+          } else {
+            el.style.display = ''
+          }
+        } else if (opts.disabledStyle !== false) {
+          if (el.__nuGuardOriginalPointerEvents__ !== undefined) {
+            el.style.pointerEvents = el.__nuGuardOriginalPointerEvents__ ?? ''
+            delete el.__nuGuardOriginalPointerEvents__
+          } else {
+            el.style.pointerEvents = ''
+          }
+          if (el.__nuGuardOriginalOpacity__ !== undefined) {
+            el.style.opacity = el.__nuGuardOriginalOpacity__ ?? ''
+            delete el.__nuGuardOriginalOpacity__
+          } else {
+            el.style.removeProperty('opacity')
+          }
+          el.removeAttribute('aria-disabled')
+        }
+      }
+
+      function interceptAct(el: NuGuardElement) {
+        const existing = el.__nuActHandler__
+        if (!existing) return
+        if (el.__nuGuardWrappedHandler__ && el.__nuGuardWrappedHandler__ === existing) return
+        const wrapped: EventListener = (ev) => {
+          ensureA11y(el)
+          return existing.call(el, ev)
+        }
+        el.removeEventListener('click', existing)
+        el.addEventListener('click', wrapped, { passive: true })
+        el.__nuGuardWrappedOriginal__ = existing
+        el.__nuGuardWrappedHandler__ = wrapped
+        el.__nuActHandler__ = wrapped
+      }
+
+      function releaseIntercept(el: NuGuardElement) {
+        const wrapped = el.__nuGuardWrappedHandler__
+        const original = el.__nuGuardWrappedOriginal__
+        if (wrapped) {
+          el.removeEventListener('click', wrapped)
+        }
+        if (original && el.__nuActHandler__ === wrapped) {
+          el.addEventListener('click', original, { passive: true })
+          el.__nuActHandler__ = original
+        }
+        delete el.__nuGuardWrappedHandler__
+        delete el.__nuGuardWrappedOriginal__
+      }
+
+      function processGuard(el: NuGuardElement, opts: GuardBinding) {
+        const can = hasRoleFor(nura, opts.scope, opts.action)
+        applyGuardAccess(el, opts, can)
+
+        const when = opts.when ?? 'auto'
+        const hasAct = el.hasAttribute('data-nu-act')
+        const intercept = when === 'always' || (when === 'auto' && hasAct)
+
+        if (intercept) {
+          const runner = () => interceptAct(el)
+          if (hasAct) {
+            runner()
+          } else {
+            queueMicrotask(runner)
+          }
+          if (hasAct) ensureA11y(el)
+        } else {
+          releaseIntercept(el)
+          if (hasAct) ensureA11y(el)
+        }
+      }
+
+      app.directive('nu-guard', {
+        mounted(element: HTMLElement, binding: DirectiveBinding<GuardBinding>) {
+          const opts = binding.value
+          if (!opts?.scope || !opts?.action) return
+          processGuard(element as NuGuardElement, opts)
+        },
+        updated(element: HTMLElement, binding: DirectiveBinding<GuardBinding>) {
+          const opts = binding.value
+          if (!opts?.scope || !opts?.action) return
+          processGuard(element as NuGuardElement, opts)
+        },
+        unmounted(element: HTMLElement) {
+          releaseIntercept(element as NuGuardElement)
         }
       })
     }
