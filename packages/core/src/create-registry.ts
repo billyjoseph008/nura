@@ -7,6 +7,8 @@ import type {
   NPermissions,
   NRegistry,
   NResult,
+  NAudit,
+  NPermissionRule,
   NuraEvent,
   NuraEventListener,
   NuraEventType,
@@ -19,6 +21,7 @@ export type CreateRegistryOptions = {
   config?: Partial<NConfig>
   permissions?: Partial<NPermissions>
   actionCatalog?: Partial<NActionCatalog>
+  audit?: NAudit
 }
 
 export type CreateRegistryInput = NConfig | CreateRegistryOptions | undefined
@@ -32,6 +35,9 @@ const createDefaultConfig = (config: Partial<NConfig> | undefined): NConfig => (
     locale: config?.app?.locale,
   },
   capabilities: config?.capabilities,
+  resolveScope: config?.resolveScope,
+  confirm: config?.confirm,
+  actor: config?.actor,
 })
 
 const createDefaultPermissions = (
@@ -147,7 +153,10 @@ export const createRegistry = (input: CreateRegistryInput = undefined): NRegistr
       scope,
       verbs: Object.keys(verbs) as NuraVerb[],
       roles: undefined,
-      confirm: Object.values(verbs).some((rule) => rule.confirm),
+      confirm: Object.values(verbs).some(
+        (rule) => rule.confirm || rule.policy === 'confirm',
+      ),
+      policy: undefined,
     })
   }
 
@@ -170,6 +179,7 @@ export const createRegistry = (input: CreateRegistryInput = undefined): NRegistr
     actions: createActionCatalog(executeAction, options.actionCatalog, emit),
     permissions: permissionState,
     config: createDefaultConfig(options.config),
+    audit: options.audit,
     registerAction(action: LegacyNuraAction) {
       actionStore.set(createActionKey(action.verb, action.scope), action)
       emit('action:registered', { action })
@@ -184,13 +194,16 @@ export const createRegistry = (input: CreateRegistryInput = undefined): NRegistr
     },
     addPermission(permission: NuraPermission) {
       permissionStore.set(permission.scope, permission)
-      permissionState.scopes[permission.scope] = permission.verbs.reduce<Record<string, { roles?: string[]; confirm?: boolean }>>(
-        (acc, verb) => {
-          acc[verb] = { roles: permission.roles, confirm: permission.confirm }
-          return acc
-        },
-        {},
-      )
+      permissionState.scopes[permission.scope] = permission.verbs.reduce<
+        Record<string, NPermissionRule>
+      >((acc, verb) => {
+        acc[verb] = {
+          roles: permission.roles,
+          confirm: permission.confirm,
+          policy: permission.policy,
+        }
+        return acc
+      }, {})
       emit('permission:added', { permission })
     },
     removePermission(scope: NuraScope) {

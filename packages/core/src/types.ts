@@ -35,8 +35,22 @@ export interface NAgent {
   stop?(): void
 }
 
+export type NPolicy = 'deny' | 'allow' | 'confirm'
+
+export interface NPermissionRule {
+  roles?: string[]
+  confirm?: boolean
+  policy?: NPolicy
+}
+
 export interface NPermissions {
-  scopes: Record<string, Record<string, { roles?: string[]; confirm?: boolean }>>
+  scopes: Record<string, Record<string, NPermissionRule>>
+}
+
+export interface NActor {
+  id?: string
+  roles?: string[]
+  via?: 'user' | 'agent' | 'system'
 }
 
 export interface NActionCatalog {
@@ -45,15 +59,36 @@ export interface NActionCatalog {
 
 export type NResult = { ok: boolean; message?: string }
 
+export type NConfirmFn = (ctx: {
+  action: NAction
+  scope?: string
+  rule?: NPermissionRule
+}) => Promise<boolean> | boolean
+
+export interface NAudit {
+  log: (entry: {
+    action: NAction
+    actor?: NActor
+    scope?: string
+    allowed: boolean
+    reason?: string
+    timestamp: number
+  }) => void
+}
+
 export interface NConfig {
   app: { id: string; locale?: string }
   capabilities?: Partial<{ voice: boolean; rpa: boolean; analytics: boolean }>
+  resolveScope?: (action: NAction) => string | undefined
+  confirm?: NConfirmFn
+  actor?: () => NActor | undefined
 }
 
 export interface NRegistry {
   actions: NActionCatalog
   permissions: NPermissions
   config: NConfig
+  audit?: NAudit
   registerAction(action: NuraAction): void
   unregisterAction(verb: NActionType, scope: NuraScope): void
   executeAction(
@@ -71,7 +106,7 @@ export interface NContext {
   registry: NRegistry
   act(action: NAction): Promise<NResult>
   select(selector: string): Element[]
-  audit: { log: (action: NAction, actor: string, result: NResult) => void }
+  audit?: NAudit
 }
 
 export type NuraVerb = NActionType
@@ -94,6 +129,7 @@ export interface NuraPermission {
   verbs: NuraVerb[]
   roles?: string[]
   confirm?: boolean
+  policy?: NPolicy
   condition?: () => boolean | Promise<boolean>
 }
 
