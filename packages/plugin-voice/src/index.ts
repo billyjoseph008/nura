@@ -1,4 +1,4 @@
-import type { NAgent, NContext, NAction } from '@nura/core'
+import type { NAgent, NContext, NAction, NActionSpec } from '@nura/core'
 
 // ---- Tipos auxiliares ----
 type SpeechRecognitionResultAlternative = { transcript?: string }
@@ -27,14 +27,13 @@ export type NIntent = {
   // patrón de coincidencia: RegExp o función (texto -> NAction | null)
   match: RegExp | ((utterance: string) => NAction | null)
   // si match es RegExp, toAction convierte el resultado al NAction
-  toAction?: (m: RegExpMatchArray) => NAction
+  toAction?: (m: RegExpMatchArray) => NAction | null
   locale?: string // ej: 'es-CR'
 }
 
 export type NVoiceOptions = {
   wakeWords?: string[] // ej: ['ok nura','hey nura']
   intents?: NIntent[] // intents declarativos
-  deriveFromCatalog?: () => NAction[] // opcional: genera acciones base
   language?: string // Web Speech API lang, ej 'es-CR'
   keyWake?: string // fallback teclado (ej: 'F2')
   autoStart?: boolean // arranca de una vez
@@ -42,10 +41,6 @@ export type NVoiceOptions = {
 
 function escapeRegex(s: string) {
   return s.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&')
-}
-
-function isModernAction(action: NAction): action is Extract<NAction, { type: string }> {
-  return typeof (action as { type?: unknown }).type === 'string'
 }
 
 function getWindow(): (Window & typeof globalThis & {
@@ -59,47 +54,96 @@ function getWindow(): (Window & typeof globalThis & {
   }
 }
 
+function slotPattern(type: 'number' | 'string', custom?: RegExp) {
+  if (custom) return custom
+  return type === 'number' ? /([0-9]+)/ : /(.+)/
+}
+
+function phraseToRegExp(phrase: string, entities?: NActionSpec['entities']) {
+  const trimmed = phrase.trim()
+  if (!entities || entities.length === 0) {
+    const simple = '^' + escapeRegex(trimmed) + '$'
+    return new RegExp(simple, 'i')
+  }
+
+  const placeholder = /\{([^}]+)\}/g
+  let lastIndex = 0
+  let pattern = '^'
+  let match: RegExpExecArray | null
+  while ((match = placeholder.exec(trimmed)) !== null) {
+    const before = trimmed.slice(lastIndex, match.index)
+    pattern += escapeRegex(before)
+    const name = match[1]
+    const entity = entities.find((ent) => ent.name === name)
+    const re = slotPattern(entity?.type ?? 'string', entity?.pattern)
+    pattern += re.source
+    lastIndex = placeholder.lastIndex
+  }
+  pattern += escapeRegex(trimmed.slice(lastIndex))
+  pattern += '$'
+
+  return new RegExp(pattern, 'i')
+}
+
+function deriveIntentsFromSpecs(specs: NActionSpec[], locale: string): NIntent[] {
+  const intents: NIntent[] = []
+  for (const spec of specs) {
+    const pack =
+      spec.phrases[locale] ??
+      (spec.locale ? spec.phrases[spec.locale] : undefined) ??
+      Object.values(spec.phrases)[0]
+    if (!pack) continue
+
+    const phrases = [...(pack.canonical ?? []), ...(pack.synonyms ?? [])]
+    for (const phrase of phrases) {
+      const rx = phraseToRegExp(phrase, spec.entities)
+      intents.push({
+        name: `${spec.name}:${phrase}`,
+        match: rx,
+        toAction: (m) => {
+          const payload: Record<string, unknown> = {}
+          if (spec.entities && spec.entities.length) {
+            let groupIdx = 1
+            for (const ent of spec.entities) {
+              const raw = m[groupIdx++]
+              if (raw === undefined) continue
+              payload[ent.name] = ent.type === 'number' ? Number(raw) : raw
+            }
+          }
+
+          if (spec.validate) {
+            const valid = spec.validate(Object.keys(payload).length ? payload : undefined)
+            if (!valid) return null
+          }
+
+          const finalPayload = Object.keys(payload).length ? payload : undefined
+
+          return {
+            type: spec.type,
+            target: spec.target,
+            payload: finalPayload,
+            meta: { desc: phrase },
+          }
+        },
+      })
+    }
+  }
+  return intents
+}
+
+function getSpecsFromCtx(ctx: NContext): NActionSpec[] {
+  try {
+    return ctx.registry.actions.listSpecs()
+  } catch {
+    return []
+  }
+}
+
 // ---- Agente de voz ----
 export function voiceAgent(opts: NVoiceOptions = {}): NAgent {
   const wake = new Set((opts.wakeWords ?? []).map((w) => w.toLowerCase()))
   const lang = opts.language ?? 'es-ES'
   const key = opts.keyWake ?? 'F2'
-
-  // derivación simple de gramática desde catálogo (si se provee)
-  // se limita a generar frases "open <target>", "delete <target>" como demo
-  function deriveIntentsFromCatalog(): NIntent[] {
-    if (!opts.deriveFromCatalog) return []
-    const acts = opts.deriveFromCatalog() || []
-    const intents: NIntent[] = []
-    for (const a of acts) {
-      // ejemplo básico para open/delete
-      if (isModernAction(a) && a.type === 'open' && a.target) {
-        const label = a.target.replace(/[:]/g, ' ') // "menu:orders" -> "menu orders"
-        intents.push({
-          name: `open_${a.target}`,
-          match: new RegExp(`^(abre|abrir)\\s+(el\\s+)?${escapeRegex(label)}$`, 'i'),
-          toAction: () => ({ type: 'open', target: a.target, meta: a.meta })
-        })
-      }
-      if (isModernAction(a) && a.type === 'delete' && a.target) {
-        const label = a.target.replace(/[:]/g, ' ')
-        intents.push({
-          name: `delete_${a.target}`,
-          match: new RegExp(
-            `^(elimina|borrar)\\s+(el\\s+)?${escapeRegex(label)}(\\s+(\\d+))?$`,
-            'i'
-          ),
-          toAction: (m) => ({
-            type: 'delete',
-            target: a.target,
-            payload: m[4] ? { id: Number(m[4]) } : undefined,
-            meta: a.meta
-          })
-        })
-      }
-    }
-    return intents
-  }
 
   // motor de coincidencia
   function resolveUtterance(text: string, intents: NIntent[]): NAction | null {
@@ -110,7 +154,11 @@ export function voiceAgent(opts: NVoiceOptions = {}): NAgent {
         if (a) return a
       } else {
         const m = t.match(it.match)
-        if (m) return it.toAction ? it.toAction(m) : null
+        if (m) {
+          if (!it.toAction) continue
+          const act = it.toAction(m)
+          if (act) return act
+        }
       }
     }
     return null
@@ -158,7 +206,8 @@ export function voiceAgent(opts: NVoiceOptions = {}): NAgent {
   }
 
   function handleTranscript(text: string, ctx: NContext) {
-    const derived = deriveIntentsFromCatalog()
+    const specs = getSpecsFromCtx(ctx)
+    const derived = deriveIntentsFromSpecs(specs, lang)
     const intents = [...(opts.intents ?? []), ...derived]
     if (!hasWakeWord(text)) return
     const content = stripWake(text)

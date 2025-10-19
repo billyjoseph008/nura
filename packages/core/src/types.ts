@@ -11,6 +11,16 @@ export type NActionType =
   | 'custom'
   | 'click'
 
+export type NLocale = string
+
+export type NEntityType = 'string' | 'number'
+
+export type NEntityDef = {
+  name: string
+  type: NEntityType
+  pattern?: RegExp
+}
+
 export type ModernNAction = {
   type: NActionType
   target?: string
@@ -27,6 +37,23 @@ export interface LegacyNuraAction {
 }
 
 export type NAction = ModernNAction | LegacyNuraAction
+
+export interface NActionSpec {
+  name: string
+  type: NActionType
+  target?: string
+  scope?: string
+  locale?: NLocale
+  phrases: Record<
+    NLocale,
+    {
+      canonical: string[]
+      synonyms?: string[]
+    }
+  >
+  entities?: NEntityDef[]
+  validate?: (payload: Record<string, unknown> | undefined) => boolean
+}
 
 export interface NAgent {
   id: string
@@ -55,6 +82,8 @@ export interface NActor {
 
 export interface NActionCatalog {
   dispatch(action: NAction): Promise<NResult>
+  listSpecs(): NActionSpec[]
+  register(spec: NActionSpec): void
 }
 
 export type NResult = { ok: boolean; message?: string }

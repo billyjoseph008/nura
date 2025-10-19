@@ -1,7 +1,9 @@
+import { createActionCatalog as createCoreActionCatalog } from './actions'
 import type {
   LegacyNuraAction,
   NAction,
   NActionCatalog,
+  NActionSpec,
   NActionType,
   NConfig,
   NPermissions,
@@ -22,6 +24,8 @@ export type CreateRegistryOptions = {
   permissions?: Partial<NPermissions>
   actionCatalog?: Partial<NActionCatalog>
   audit?: NAudit
+  routes?: Record<string, (payload?: any) => Promise<NResult> | NResult>
+  specs?: NActionSpec[]
 }
 
 export type CreateRegistryInput = NConfig | CreateRegistryOptions | undefined
@@ -111,31 +115,6 @@ const runRegisteredAction = (
   }
 }
 
-const createActionCatalog = (
-  executeAction: (
-    verb: NActionType,
-    scope: NuraScope,
-    params?: Record<string, unknown>,
-  ) => Promise<NResult>,
-  actionCatalog: Partial<NActionCatalog> | undefined,
-  emit: (type: NuraEventType, data: unknown) => void,
-): NActionCatalog => ({
-  dispatch: actionCatalog?.dispatch
-    ? actionCatalog.dispatch
-    : async (action: NAction) => {
-        if ('verb' in action && action.scope) {
-          return executeAction(action.verb, action.scope, action.metadata)
-        }
-
-        if ('type' in action && action.type) {
-          return executeAction(action.type, action.target ?? 'default', action.payload)
-        }
-
-        emit('action:error', { action, reason: 'unhandled' })
-        return defaultDispatch()
-      },
-})
-
 export const createRegistry = (input: CreateRegistryInput = undefined): NRegistry => {
   const options = normalizeOptions(input)
   const actionStore = new Map<string, LegacyNuraAction>()
@@ -175,8 +154,37 @@ export const createRegistry = (input: CreateRegistryInput = undefined): NRegistr
     return result
   }
 
+  const baseCatalog = createCoreActionCatalog(options.routes, options.specs)
+
+  const actions: NActionCatalog = {
+    dispatch:
+      options.actionCatalog?.dispatch ??
+      (async (action: NAction) => {
+        if ('verb' in action && action.scope) {
+          return executeAction(action.verb, action.scope, action.metadata)
+        }
+
+        if ('type' in action && action.type) {
+          const result = await baseCatalog.dispatch(action)
+          if (!result.ok && result.message?.startsWith('No handler')) {
+            return executeAction(action.type, action.target ?? 'default', action.payload)
+          }
+          return result
+        }
+
+        emit('action:error', { action, reason: 'unhandled' })
+        return defaultDispatch()
+      }),
+    listSpecs:
+      options.actionCatalog?.listSpecs ?? (() => baseCatalog.listSpecs()),
+    register:
+      options.actionCatalog?.register ?? ((spec: NActionSpec) => {
+        baseCatalog.register(spec)
+      }),
+  }
+
   return {
-    actions: createActionCatalog(executeAction, options.actionCatalog, emit),
+    actions,
     permissions: permissionState,
     config: createDefaultConfig(options.config),
     audit: options.audit,

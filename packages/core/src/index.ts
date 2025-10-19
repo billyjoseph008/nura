@@ -81,6 +81,7 @@ export class Nura {
 
 export * from './types'
 export { createRegistry } from './create-registry'
+export { createActionCatalog, defineActionSpec } from './actions'
 
 function resolveScope(action: NAction, config: NRegistry['config']): string | undefined {
   const resolved = config.resolveScope?.(action)
