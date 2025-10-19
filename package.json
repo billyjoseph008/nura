@@ -16,9 +16,9 @@
     "test": "turbo run test"
   },
   "dependencies": {
-    "@nura/core": "latest",
-    "@nura/dom": "latest",
-    "@nura/react": "latest",
+    "@nura/core": "workspace:*",
+    "@nura/dom": "workspace:*",
+    "@nura/react": "workspace:*",
     "@vercel/analytics": "latest",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

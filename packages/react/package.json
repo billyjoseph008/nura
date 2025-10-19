@@ -13,8 +13,8 @@
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts --external react",
-    "dev": "tsup src/index.ts --format cjs,esm --dts --external react --watch",
+    "build": "tsup src/index.ts --format cjs,esm --dts --treeshake --minify --external react",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --treeshake --external react --watch",
     "lint": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
