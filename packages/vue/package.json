@@ -13,8 +13,8 @@
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts --treeshake --minify --external vue",
-    "dev": "tsup src/index.ts --format cjs,esm --dts --treeshake --external vue --watch",
+    "build": "tsup src/index.ts --format cjs,esm --dts --treeshake --minify --external vue --loader .vue=ts",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --treeshake --external vue --loader .vue=ts --watch",
     "lint": "tsc --noEmit",
     "clean": "rm -rf dist"
   },

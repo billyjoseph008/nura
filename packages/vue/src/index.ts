@@ -22,7 +22,7 @@ export { vNura } from "./directives/v-nura"
 export type { VNuraBinding } from "./directives/v-nura"
 
 // Components
-export { default as NuraElement } from "./components/NuraElement.vue"
+export { default as NuraElement } from "./components/NuraElement"
 
 // Re-export core types
 export type {
@@ -33,7 +33,7 @@ export type {
   NuraEventListener,
   NuraEventType,
   NuraPermission,
-  NuraPlugin,
+  NuraPlugin as CoreNuraPlugin,
   NuraRegistry,
   NuraScope,
   NuraVerb,

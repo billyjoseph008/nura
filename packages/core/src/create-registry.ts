@@ -1,19 +1,219 @@
-import { NuraRegistry } from "./registry"
-import type { NuraConfig } from "./types"
+import type {
+  LegacyNuraAction,
+  NAction,
+  NActionCatalog,
+  NActionType,
+  NConfig,
+  NPermissions,
+  NRegistry,
+  NResult,
+  NuraEvent,
+  NuraEventListener,
+  NuraEventType,
+  NuraPermission,
+  NuraVerb,
+  NuraScope,
+} from './types'
 
-let globalRegistry: NuraRegistry | null = null
-
-export function createRegistry(config?: NuraConfig): NuraRegistry {
-  return new NuraRegistry(config)
+export type CreateRegistryOptions = {
+  config?: Partial<NConfig>
+  permissions?: Partial<NPermissions>
+  actionCatalog?: Partial<NActionCatalog>
 }
 
-export function getGlobalRegistry(): NuraRegistry {
-  if (!globalRegistry) {
-    globalRegistry = createRegistry()
+export type CreateRegistryInput = NConfig | CreateRegistryOptions | undefined
+
+const isConfig = (input: CreateRegistryInput): input is NConfig =>
+  typeof input === 'object' && input !== null && 'app' in input
+
+const createDefaultConfig = (config: Partial<NConfig> | undefined): NConfig => ({
+  app: {
+    id: config?.app?.id ?? 'nura-app',
+    locale: config?.app?.locale,
+  },
+  capabilities: config?.capabilities,
+})
+
+const createDefaultPermissions = (
+  permissions: Partial<NPermissions> | undefined,
+): NPermissions => ({
+  scopes: permissions?.scopes ?? {},
+})
+
+const defaultDispatch = async (): Promise<NResult> => ({
+  ok: false,
+  message: 'No dispatcher configured',
+})
+
+const normalizeOptions = (input: CreateRegistryInput): CreateRegistryOptions => {
+  if (!input) return {}
+  if (isConfig(input)) {
+    return { config: input }
   }
-  return globalRegistry
+  return input
 }
 
-export function setGlobalRegistry(registry: NuraRegistry): void {
-  globalRegistry = registry
+const createActionKey = (verb: NActionType, scope: NuraScope): string => `${scope}::${verb}`
+
+const createListenerMap = () => new Map<NuraEventType, Set<NuraEventListener>>()
+
+const emitToListeners = (
+  listeners: Map<NuraEventType, Set<NuraEventListener>>,
+  type: NuraEventType,
+  event: NuraEvent,
+): void => {
+  const callbacks = listeners.get(type)
+  if (!callbacks) return
+
+  callbacks.forEach((listener) => listener(event))
+}
+
+const addListener = (
+  listeners: Map<NuraEventType, Set<NuraEventListener>>,
+  type: NuraEventType,
+  listener: NuraEventListener,
+): (() => void) => {
+  const existing = listeners.get(type) ?? new Set<NuraEventListener>()
+  existing.add(listener)
+  listeners.set(type, existing)
+
+  return () => {
+    existing.delete(listener)
+    if (existing.size === 0) {
+      listeners.delete(type)
+    }
+  }
+}
+
+const runRegisteredAction = (
+  store: Map<string, LegacyNuraAction>,
+): (verb: NActionType, scope: NuraScope, params?: Record<string, unknown>) => Promise<NResult> => {
+  return async (verb, scope, params) => {
+    const action = store.get(createActionKey(verb, scope))
+
+    if (!action) {
+      return { ok: false, message: `No action registered for ${scope}:${verb}` }
+    }
+
+    try {
+      await action.handler(params)
+      return { ok: true }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error'
+      return { ok: false, message }
+    }
+  }
+}
+
+const createActionCatalog = (
+  executeAction: (
+    verb: NActionType,
+    scope: NuraScope,
+    params?: Record<string, unknown>,
+  ) => Promise<NResult>,
+  actionCatalog: Partial<NActionCatalog> | undefined,
+  emit: (type: NuraEventType, data: unknown) => void,
+): NActionCatalog => ({
+  dispatch: actionCatalog?.dispatch
+    ? actionCatalog.dispatch
+    : async (action: NAction) => {
+        if ('verb' in action && action.scope) {
+          return executeAction(action.verb, action.scope, action.metadata)
+        }
+
+        if ('type' in action && action.type) {
+          return executeAction(action.type, action.target ?? 'default', action.payload)
+        }
+
+        emit('action:error', { action, reason: 'unhandled' })
+        return defaultDispatch()
+      },
+})
+
+export const createRegistry = (input: CreateRegistryInput = undefined): NRegistry => {
+  const options = normalizeOptions(input)
+  const actionStore = new Map<string, LegacyNuraAction>()
+  const listeners = createListenerMap()
+  const permissionStore = new Map<NuraScope, NuraPermission>()
+  const permissionState = createDefaultPermissions(options.permissions)
+
+  const emit = (type: NuraEventType, data: unknown): void => {
+    const event: NuraEvent = { type, data, timestamp: Date.now() }
+    emitToListeners(listeners, type, event)
+  }
+
+  for (const [scope, verbs] of Object.entries(permissionState.scopes)) {
+    permissionStore.set(scope, {
+      scope,
+      verbs: Object.keys(verbs) as NuraVerb[],
+      roles: undefined,
+      confirm: Object.values(verbs).some((rule) => rule.confirm),
+    })
+  }
+
+  const executeRegisteredAction = runRegisteredAction(actionStore)
+
+  const executeAction = async (
+    verb: NActionType,
+    scope: NuraScope,
+    params?: Record<string, unknown>,
+  ): Promise<NResult> => {
+    const result = await executeRegisteredAction(verb, scope, params)
+    emit('action:executed', { verb, scope, params, result })
+    if (!result.ok) {
+      emit('action:error', { verb, scope, params, result })
+    }
+    return result
+  }
+
+  return {
+    actions: createActionCatalog(executeAction, options.actionCatalog, emit),
+    permissions: permissionState,
+    config: createDefaultConfig(options.config),
+    registerAction(action: LegacyNuraAction) {
+      actionStore.set(createActionKey(action.verb, action.scope), action)
+      emit('action:registered', { action })
+    },
+    unregisterAction(verb: NActionType, scope: NuraScope) {
+      actionStore.delete(createActionKey(verb, scope))
+      emit('action:unregistered', { verb, scope })
+    },
+    executeAction,
+    on(type: NuraEventType, listener: NuraEventListener) {
+      return addListener(listeners, type, listener)
+    },
+    addPermission(permission: NuraPermission) {
+      permissionStore.set(permission.scope, permission)
+      permissionState.scopes[permission.scope] = permission.verbs.reduce<Record<string, { roles?: string[]; confirm?: boolean }>>(
+        (acc, verb) => {
+          acc[verb] = { roles: permission.roles, confirm: permission.confirm }
+          return acc
+        },
+        {},
+      )
+      emit('permission:added', { permission })
+    },
+    removePermission(scope: NuraScope) {
+      permissionStore.delete(scope)
+      delete permissionState.scopes[scope]
+      emit('permission:removed', { scope })
+    },
+    async hasPermission(verb: NActionType, scope: NuraScope) {
+      const record = permissionStore.get(scope)
+      if (!record || !record.verbs.includes(verb)) {
+        emit('permission:denied', { verb, scope })
+        return false
+      }
+
+      if (record.condition) {
+        const result = await record.condition()
+        if (!result) {
+          emit('permission:denied', { verb, scope })
+        }
+        return result
+      }
+
+      return true
+    },
+  }
 }

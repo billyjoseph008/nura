@@ -1,27 +1,25 @@
 {
   "name": "@nura/core",
   "version": "0.1.0",
-  "description": "Core registry and types for Nura.js",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
+      "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     }
   },
+  "sideEffects": false,
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts --treeshake --minify",
-    "dev": "tsup src/index.ts --format cjs,esm --dts --treeshake --watch",
-    "lint": "tsc --noEmit",
-    "clean": "rm -rf dist"
+    "build": "tsup src/index.ts --dts --format esm --clean",
+    "dev": "tsup src/index.ts --dts --format esm --watch",
+    "lint": "eslint .",
+    "test": "echo \"(todo)\""
   },
-  "keywords": ["nura", "ai", "semantic", "registry"],
-  "license": "MIT",
   "devDependencies": {
-    "tsup": "^8.0.0",
-    "typescript": "^5.5.0"
+    "tsup": "^8.0.1",
+    "typescript": "^5.4.0"
   }
 }

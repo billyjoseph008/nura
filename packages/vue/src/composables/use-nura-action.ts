@@ -1,4 +1,4 @@
-import { onMounted, onBeforeUnmount, watch, toRef, type Ref } from "vue"
+import { onMounted, onBeforeUnmount, watch, toRef, unref, type Ref } from "vue"
 import { useNuraInstance } from "../plugin"
 import type { NuraAction, NuraVerb, NuraScope } from "@nura/core"
 
@@ -14,28 +14,28 @@ export interface UseNuraActionOptions {
 export function useNuraAction(options: UseNuraActionOptions) {
   const { registry } = useNuraInstance()
 
-  const verbRef = toRef(options, "verb")
-  const scopeRef = toRef(options, "scope")
-  const descriptionRef = toRef(options, "description")
-  const metadataRef = toRef(options, "metadata")
-  const enabledRef = toRef(options, "enabled")
+  const verbRef = toRef(options, "verb") as Ref<NuraVerb>
+  const scopeRef = toRef(options, "scope") as Ref<NuraScope>
+  const descriptionRef = toRef(options, "description") as Ref<string | undefined>
+  const metadataRef = toRef(options, "metadata") as Ref<Record<string, any> | undefined>
+  const enabledRef = toRef(options, "enabled") as Ref<boolean | undefined>
 
   const register = () => {
     if (enabledRef.value === false) return
 
     const action: NuraAction = {
-      verb: verbRef.value,
-      scope: scopeRef.value,
+      verb: unref(verbRef),
+      scope: unref(scopeRef),
       handler: options.handler,
-      description: descriptionRef.value,
-      metadata: metadataRef.value,
+      description: unref(descriptionRef),
+      metadata: unref(metadataRef),
     }
 
     registry.registerAction(action)
   }
 
   const unregister = () => {
-    registry.unregisterAction(verbRef.value, scopeRef.value)
+    registry.unregisterAction(unref(verbRef), unref(scopeRef))
   }
 
   onMounted(() => {
@@ -53,7 +53,7 @@ export function useNuraAction(options: UseNuraActionOptions) {
   })
 
   const execute = async (params?: Record<string, any>) => {
-    return registry.executeAction(verbRef.value, scopeRef.value, params)
+    return registry.executeAction(unref(verbRef), unref(scopeRef), params)
   }
 
   return { execute }
