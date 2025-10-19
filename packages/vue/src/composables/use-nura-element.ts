@@ -1,4 +1,4 @@
-import { ref, onMounted, watch, toRef, type Ref } from "vue"
+import { ref, onMounted, watch, toRef, unref, type Ref } from "vue"
 import type { NuraVerb, NuraScope } from "@nura/core"
 
 export interface UseNuraElementOptions {
@@ -8,13 +8,15 @@ export interface UseNuraElementOptions {
   meta?: Record<string, any> | Ref<Record<string, any>>
 }
 
-export function useNuraElement<T extends HTMLElement = HTMLElement>(options: UseNuraElementOptions) {
+export function useNuraElement<T extends HTMLElement = HTMLElement>(
+  options: UseNuraElementOptions,
+): Ref<T | null> {
   const elementRef = ref<T | null>(null)
 
   const scopeRef = toRef(options, "scope")
-  const listenRef = toRef(options, "listen")
-  const actRef = toRef(options, "act")
-  const metaRef = toRef(options, "meta")
+  const listenRef = toRef(options, "listen") as Ref<NuraVerb[] | undefined>
+  const actRef = toRef(options, "act") as Ref<NuraVerb[] | undefined>
+  const metaRef = toRef(options, "meta") as Ref<Record<string, any> | undefined>
 
   const updateAttributes = () => {
     if (!elementRef.value) return
@@ -25,7 +27,7 @@ export function useNuraElement<T extends HTMLElement = HTMLElement>(options: Use
     element.setAttribute("data-nu-scope", scopeRef.value)
 
     // Set listen verbs
-    const listen = listenRef.value || []
+    const listen = unref(listenRef) ?? []
     if (listen.length > 0) {
       element.setAttribute("data-nu-listen", listen.join(" "))
     } else {
@@ -33,7 +35,7 @@ export function useNuraElement<T extends HTMLElement = HTMLElement>(options: Use
     }
 
     // Set act verbs
-    const act = actRef.value || []
+    const act = unref(actRef) ?? []
     if (act.length > 0) {
       element.setAttribute("data-nu-act", act.join(" "))
     } else {
@@ -41,7 +43,7 @@ export function useNuraElement<T extends HTMLElement = HTMLElement>(options: Use
     }
 
     // Set metadata
-    const meta = metaRef.value
+    const meta = unref(metaRef)
     if (meta && Object.keys(meta).length > 0) {
       element.setAttribute("data-nu-meta", JSON.stringify(meta))
     } else {
@@ -57,5 +59,5 @@ export function useNuraElement<T extends HTMLElement = HTMLElement>(options: Use
     updateAttributes()
   })
 
-  return elementRef
+  return elementRef as Ref<T | null>
 }

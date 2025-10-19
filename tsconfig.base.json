@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ES2020",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
+    "module": "ES2020",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "allowJs": false,
@@ -17,13 +17,7 @@
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
     "isolatedModules": true,
-    "baseUrl": ".",
-    "paths": {
-      "@nura/*": [
-        "packages/*/src/index.ts",
-        "packages/*/src/*"
-      ]
-    }
+    "declaration": true
   },
   "exclude": ["node_modules", "dist", ".next", "coverage"]
 }

@@ -13,8 +13,8 @@
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts --treeshake --minify --external svelte",
-    "dev": "tsup src/index.ts --format cjs,esm --dts --treeshake --external svelte --watch",
+    "build": "echo \"(todo)\"",
+    "dev": "echo \"(todo)\"",
     "lint": "tsc --noEmit",
     "clean": "rm -rf dist"
   },

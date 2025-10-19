@@ -1,4 +1,5 @@
 import type { NuraElement, NuraVerb, NuraScope } from "@nura/core"
+import { parseVerbList } from "./verbs"
 
 export interface ScanResult {
   elements: NuraElement[]
@@ -7,7 +8,7 @@ export interface ScanResult {
   stats: {
     total: number
     byScope: Record<NuraScope, number>
-    byVerb: Record<NuraVerb, number>
+    byVerb: Partial<Record<NuraVerb, number>>
   }
 }
 
@@ -16,7 +17,7 @@ export function scanDOM(root: HTMLElement = document.body): ScanResult {
   const scopes = new Set<NuraScope>()
   const verbs = new Set<NuraVerb>()
   const byScope: Record<NuraScope, number> = {}
-  const byVerb: Record<NuraVerb, number> = {}
+  const byVerb: Partial<Record<NuraVerb, number>> = {}
 
   const nodeList = root.querySelectorAll("[data-nu-scope]")
 
@@ -28,9 +29,9 @@ export function scanDOM(root: HTMLElement = document.body): ScanResult {
     const listenAttr = element.getAttribute("data-nu-listen")
     const actAttr = element.getAttribute("data-nu-act")
 
-    const elementVerbs: NuraVerb[] = [
-      ...(listenAttr?.split(/[\s,]+/).filter(Boolean) || []),
-      ...(actAttr?.split(/[\s,]+/).filter(Boolean) || []),
+    const elementVerbs = [
+      ...parseVerbList(listenAttr),
+      ...parseVerbList(actAttr),
     ]
 
     if (elementVerbs.length === 0) return
@@ -91,8 +92,8 @@ export function findElementsByVerb(verb: NuraVerb, root: HTMLElement = document.
     const actAttr = element.getAttribute("data-nu-act")
 
     const verbs = [
-      ...(listenAttr?.split(/[\s,]+/).filter(Boolean) || []),
-      ...(actAttr?.split(/[\s,]+/).filter(Boolean) || []),
+      ...parseVerbList(listenAttr),
+      ...parseVerbList(actAttr),
     ]
 
     if (verbs.includes(verb)) {

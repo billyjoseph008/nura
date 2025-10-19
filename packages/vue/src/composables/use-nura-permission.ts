@@ -1,4 +1,4 @@
-import { onMounted, onBeforeUnmount, ref, watch, toRef, type Ref } from "vue"
+import { onMounted, onBeforeUnmount, ref, watch, toRef, unref, type Ref } from "vue"
 import { useNuraInstance } from "../plugin"
 import type { NuraVerb, NuraScope, NuraPermission } from "@nura/core"
 
@@ -11,22 +11,22 @@ export interface UseNuraPermissionOptions {
 export function useNuraPermission(options: UseNuraPermissionOptions) {
   const { registry } = useNuraInstance()
 
-  const scopeRef = toRef(options, "scope")
-  const verbsRef = toRef(options, "verbs")
-  const conditionRef = toRef(options, "condition")
+  const scopeRef = toRef(options, "scope") as Ref<NuraScope>
+  const verbsRef = toRef(options, "verbs") as Ref<NuraVerb[]>
+  const conditionRef = toRef(options, "condition") as Ref<(() => boolean | Promise<boolean>) | undefined>
 
   const register = () => {
     const permission: NuraPermission = {
-      scope: scopeRef.value,
-      verbs: verbsRef.value,
-      condition: conditionRef.value,
+      scope: unref(scopeRef),
+      verbs: unref(verbsRef),
+      condition: unref(conditionRef),
     }
 
     registry.addPermission(permission)
   }
 
   const unregister = () => {
-    registry.removePermission(scopeRef.value)
+    registry.removePermission(unref(scopeRef))
   }
 
   onMounted(() => {
@@ -47,11 +47,11 @@ export function useHasPermission(verb: NuraVerb | Ref<NuraVerb>, scope: NuraScop
   const { registry } = useNuraInstance()
   const hasPermission = ref(true)
 
-  const verbRef = toRef(verb)
-  const scopeRef = toRef(scope)
+  const verbRef = toRef(verb) as Ref<NuraVerb>
+  const scopeRef = toRef(scope) as Ref<NuraScope>
 
   const check = async () => {
-    hasPermission.value = await registry.hasPermission(verbRef.value, scopeRef.value)
+    hasPermission.value = await registry.hasPermission(unref(verbRef), unref(scopeRef))
   }
 
   onMounted(() => {

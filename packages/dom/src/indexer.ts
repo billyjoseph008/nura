@@ -1,4 +1,5 @@
 import type { NuraElement, NuraVerb, NuraScope } from "@nura/core"
+import { parseVerbList } from "./verbs"
 
 export interface DOMIndexerOptions {
   root?: HTMLElement
@@ -44,7 +45,7 @@ export class DOMIndexer {
 
   private parseVerbs(verbsAttr: string | null): NuraVerb[] {
     if (!verbsAttr) return []
-    return verbsAttr.split(/[\s,]+/).filter(Boolean)
+    return parseVerbList(verbsAttr)
   }
 
   private indexElement(element: HTMLElement): NuraElement | null {
