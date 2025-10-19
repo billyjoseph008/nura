@@ -51,6 +51,58 @@ registry.registerAction({
 })
 \`\`\`
 
+### Semantic Action Specs
+
+```typescript
+import { defineActionSpec } from '@nura/core'
+
+const openOrdersSpec = defineActionSpec({
+  name: 'open_orders_menu',
+  type: 'open',
+  target: 'menu:orders',
+  scope: 'ui',
+  locale: 'es-CR',
+  phrases: {
+    'es-CR': {
+      canonical: ['abre el menú de órdenes'],
+      synonyms: ['abrir el menú de órdenes', 'mostrar órdenes', 'abre órdenes'],
+    },
+  },
+})
+
+const deleteOrderSpec = defineActionSpec({
+  name: 'delete_order',
+  type: 'delete',
+  target: 'order',
+  scope: 'orders',
+  locale: 'es-CR',
+  entities: [{ name: 'id', type: 'number' }],
+  phrases: {
+    'es-CR': {
+      canonical: ['elimina la orden {id}'],
+      synonyms: ['borra la orden {id}', 'eliminar orden {id}'],
+    },
+  },
+  validate: (payload) => typeof payload?.id === 'number',
+})
+
+const registryWithSpecs = createRegistry({
+  config: { app: { id: 'demo-nura', locale: 'es-CR' } },
+  specs: [openOrdersSpec, deleteOrderSpec],
+})
+
+registryWithSpecs.actions.register(
+  defineActionSpec({
+    name: 'search_orders',
+    type: 'search',
+    target: 'orders',
+    phrases: {
+      'es-CR': { canonical: ['buscar órdenes'], synonyms: ['encuentra órdenes'] },
+    },
+  }),
+)
+```
+
 ## Packages
 
 - `@nura/core` - Core registry and types
