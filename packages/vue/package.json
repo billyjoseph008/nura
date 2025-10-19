@@ -1,0 +1,36 @@
+{
+  "name": "@nura/vue",
+  "version": "0.1.0",
+  "description": "Vue adapter for Nura.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --external vue",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --external vue --watch",
+    "lint": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "keywords": ["nura", "vue", "directives", "composables"],
+  "license": "MIT",
+  "peerDependencies": {
+    "vue": "^3.0.0"
+  },
+  "dependencies": {
+    "@nura/core": "workspace:*",
+    "@nura/dom": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.5.0",
+    "vue": "^3.4.0"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "name": "@nura/svelte",
+  "version": "0.1.0",
+  "description": "Svelte adapter for Nura.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --external svelte",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --external svelte --watch",
+    "lint": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "keywords": ["nura", "svelte", "actions", "stores"],
+  "license": "MIT",
+  "peerDependencies": {
+    "svelte": "^4.0.0 || ^5.0.0"
+  },
+  "dependencies": {
+    "@nura/core": "workspace:*",
+    "@nura/dom": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "svelte": "^4.2.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.5.0"
+  }
+}
