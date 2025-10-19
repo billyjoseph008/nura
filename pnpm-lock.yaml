@@ -166,6 +166,19 @@ importers:
         specifier: ^5.5.0
         version: 5.9.3
 
+  packages/plugin-voice:
+    dependencies:
+      '@nura/core':
+        specifier: '>=0.1.0'
+        version: link:../core
+    devDependencies:
+      tsup:
+        specifier: ^8.0.1
+        version: 8.5.0(postcss@8.5.6)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.4.0
+        version: 5.9.3
+
   packages/react:
     dependencies:
       '@nura/core':
