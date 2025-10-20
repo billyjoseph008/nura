@@ -98,7 +98,7 @@ const specs = [
   }),
 ]
 
-const registry = createRegistry({
+export const registry = createRegistry({
   config: { app: { id: 'demo-i18n', locale: 'es-CR' } },
   routes: {
     'open::menu:orders': async () => ({ ok: true }),

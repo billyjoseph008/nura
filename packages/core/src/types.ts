@@ -1,5 +1,6 @@
 import type { NI18n } from './i18n'
 import type { NLexicon } from './lexicon'
+import type { NTelemetry } from './telemetry'
 
 export type NActionType =
   | 'open'
@@ -141,6 +142,7 @@ export interface NRegistry {
   audit?: NAudit
   i18n: NI18n
   lexicon: NLexicon
+  telemetry: NTelemetry
   registerAction(action: NuraAction): void
   unregisterAction(verb: NActionType, scope: NuraScope): void
   executeAction(

@@ -1,6 +1,7 @@
 import { createActionCatalog as createCoreActionCatalog } from './actions'
 import { createI18n, type NI18n, type NI18nConfig } from './i18n'
 import { createLexicon, type NLexicon } from './lexicon'
+import { createTelemetry, type NTelemetry } from './telemetry'
 import type {
   LegacyNuraAction,
   NAction,
@@ -127,6 +128,8 @@ export const createRegistry = (input: CreateRegistryInput = undefined): NRegistr
   const permissionState = createDefaultPermissions(options.permissions)
   const config = createDefaultConfig(options.config)
 
+  const telemetry: NTelemetry = createTelemetry()
+
   const i18nDefaultLocale =
     options.i18n?.defaultLocale ?? config.app.locale ?? 'es-CR'
 
@@ -135,9 +138,10 @@ export const createRegistry = (input: CreateRegistryInput = undefined): NRegistr
     fallbackLocales: options.i18n?.fallbackLocales ?? ['es', 'en'],
     bundles: options.i18n?.bundles ?? {},
     detect: options.i18n?.detect,
+    telemetry,
   })
 
-  const lexicon: NLexicon = createLexicon()
+  const lexicon: NLexicon = createLexicon(telemetry)
   for (const seed of options.seedLexicon ?? []) {
     lexicon.bulk(seed.locale, seed.terms)
   }
@@ -210,6 +214,7 @@ export const createRegistry = (input: CreateRegistryInput = undefined): NRegistr
     audit: options.audit,
     i18n,
     lexicon,
+    telemetry,
     registerAction(action: LegacyNuraAction) {
       actionStore.set(createActionKey(action.verb, action.scope), action)
       emit('action:registered', { action })
