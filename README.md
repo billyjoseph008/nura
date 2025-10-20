@@ -40,6 +40,12 @@ pnpm build
 
 See the [documentation](./docs) for detailed guides and API references.
 
+## 🛠️ CI/CD
+
+- Pull requests run linting, testing, and build checks through GitHub Actions.
+- Preview deployments on Vercel have been fully disabled—PRs no longer trigger Vercel checks or comments.
+- No Vercel credentials or configuration files are required for local development.
+
 ## 🎨 Branding
 
 - **Primary Color**: `#00D9FF` (Cyan)

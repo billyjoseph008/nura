@@ -111,6 +111,12 @@ registryWithSpecs.actions.register(
 - `@nura/vue` - Vue directives and composables
 - `@nura/svelte` - Svelte actions and stores
 
+## CI/CD and Deployments
+
+- Continuous integration runs linting, tests, and build verification via GitHub Actions.
+- Vercel preview deployments have been removed from the workflow; PRs will not trigger Vercel checks or comments.
+- No repository secrets with the `VERCEL_` prefix are required after this change.
+
 ## Philosophy
 
 Nura.js follows these principles:
