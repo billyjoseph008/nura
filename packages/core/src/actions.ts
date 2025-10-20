@@ -60,3 +60,5 @@ export function createActionCatalog(
 export function defineActionSpec(spec: NActionSpec): NActionSpec {
   return spec
 }
+
+export type { NActionCatalog, NActionSpec } from './types'

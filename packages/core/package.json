@@ -37,6 +37,14 @@
       "types": "./dist/seeds/lexicon.d.ts",
       "import": "./dist/seeds/lexicon.js"
     },
+    "./registry": {
+      "types": "./dist/registry.d.ts",
+      "import": "./dist/registry.js"
+    },
+    "./actions": {
+      "types": "./dist/actions.d.ts",
+      "import": "./dist/actions.js"
+    },
     "./package.json": "./package.json"
   },
   "typesVersions": {
@@ -45,7 +53,9 @@
       "i18n": ["dist/i18n.d.ts"],
       "lexicon": ["dist/lexicon.d.ts"],
       "entities": ["dist/entities.d.ts"],
-      "seeds/lexicon": ["dist/seeds/lexicon.d.ts"]
+      "seeds/lexicon": ["dist/seeds/lexicon.d.ts"],
+      "registry": ["dist/registry.d.ts"],
+      "actions": ["dist/actions.d.ts"]
     }
   },
   "files": [
@@ -56,8 +66,8 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsup src/index.ts src/i18n.ts src/lexicon.ts src/entities.ts src/seeds/lexicon.ts --dts --format esm --clean",
-    "dev": "tsup src/index.ts src/i18n.ts src/lexicon.ts src/entities.ts src/seeds/lexicon.ts --dts --format esm --watch",
+    "build": "tsup src/index.ts src/i18n.ts src/lexicon.ts src/entities.ts src/seeds/lexicon.ts src/registry.ts src/actions.ts --dts --format esm --clean",
+    "dev": "tsup src/index.ts src/i18n.ts src/lexicon.ts src/entities.ts src/seeds/lexicon.ts src/registry.ts src/actions.ts --dts --format esm --watch",
     "lint": "eslint . --ext .ts,.tsx,.vue --max-warnings=0",
     "test": "echo \"(todo)\""
   },
