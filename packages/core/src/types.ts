@@ -1,3 +1,6 @@
+import type { NI18n } from './i18n'
+import type { NLexicon } from './lexicon'
+
 export type NActionType =
   | 'open'
   | 'close'
@@ -49,6 +52,7 @@ export interface NActionSpec {
     {
       canonical: string[]
       synonyms?: string[]
+      labels?: string[]
     }
   >
   entities?: NEntityDef[]
@@ -118,6 +122,8 @@ export interface NRegistry {
   permissions: NPermissions
   config: NConfig
   audit?: NAudit
+  i18n: NI18n
+  lexicon: NLexicon
   registerAction(action: NuraAction): void
   unregisterAction(verb: NActionType, scope: NuraScope): void
   executeAction(
@@ -133,9 +139,11 @@ export interface NRegistry {
 
 export interface NContext {
   registry: NRegistry
-  act(action: NAction): Promise<NResult>
+  act: (action: NAction) => Promise<NResult> | NResult
   select(selector: string): Element[]
   audit?: NAudit
+  i18n: NI18n
+  lexicon: NLexicon
 }
 
 export type NuraVerb = NActionType

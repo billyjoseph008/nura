@@ -166,6 +166,15 @@ importers:
         specifier: ^5.5.0
         version: 5.9.3
 
+  packages/examples:
+    dependencies:
+      '@nura/core':
+        specifier: workspace:*
+        version: link:../core
+      '@nura/plugin-voice':
+        specifier: workspace:*
+        version: link:../plugin-voice
+
   packages/plugin-voice:
     dependencies:
       '@nura/core':

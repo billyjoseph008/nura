@@ -9,12 +9,31 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./i18n": {
+      "import": "./dist/i18n.js",
+      "types": "./dist/i18n.d.ts"
+    },
+    "./lexicon": {
+      "import": "./dist/lexicon.js",
+      "types": "./dist/lexicon.d.ts"
+    },
+    "./seeds/lexicon": {
+      "import": "./dist/seeds/lexicon.js",
+      "types": "./dist/seeds/lexicon.d.ts"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "i18n": ["src/i18n.ts"],
+      "lexicon": ["src/lexicon.ts"],
+      "seeds/lexicon": ["src/seeds/lexicon.ts"]
     }
   },
   "sideEffects": false,
   "scripts": {
-    "build": "tsup src/index.ts --dts --format esm --clean",
-    "dev": "tsup src/index.ts --dts --format esm --watch",
+    "build": "tsup src/index.ts src/i18n.ts src/lexicon.ts src/seeds/lexicon.ts --dts --format esm --clean",
+    "dev": "tsup src/index.ts src/i18n.ts src/lexicon.ts src/seeds/lexicon.ts --dts --format esm --watch",
     "lint": "eslint .",
     "test": "echo \"(todo)\""
   },

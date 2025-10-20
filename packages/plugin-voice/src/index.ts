@@ -1,4 +1,5 @@
 import type { NAgent, NContext, NAction, NActionSpec } from '@nura/core'
+import type { NLocale } from '@nura/core/i18n'
 
 // ---- Tipos auxiliares ----
 type SpeechRecognitionResultAlternative = { transcript?: string }
@@ -59,6 +60,65 @@ function slotPattern(type: 'number' | 'string', custom?: RegExp) {
   return type === 'number' ? /([0-9]+)/ : /(.+)/
 }
 
+function getActiveLocale(ctx: NContext, explicit?: NLocale): NLocale {
+  return explicit ?? ctx.registry.i18n.getLocale()
+}
+
+function normalizeUtterance(
+  ctx: NContext,
+  text: string,
+  localeOverride?: NLocale,
+): string {
+  const locale = localeOverride ?? ctx.registry.i18n.getLocale()
+  const tokens = text
+    .trim()
+    .split(/\s+/g)
+    .filter((part) => part.length > 0)
+  if (tokens.length === 0) return ''
+  return tokens
+    .map((tok) => ctx.registry.lexicon.normalize(locale, tok) ?? tok)
+    .join(' ')
+}
+
+function resolveUtteranceNormalized(
+  ctx: NContext,
+  text: string,
+  intents: NIntent[],
+  locale: NLocale,
+): NAction | undefined {
+  const original = text.trim()
+  if (!original) return undefined
+  const normalized = normalizeUtterance(ctx, original, locale)
+  for (const it of intents) {
+    if (typeof it.match === 'function') {
+      const normalizedAction = it.match(normalized)
+      if (normalizedAction) return normalizedAction
+      if (normalized !== original) {
+        const fallback = it.match(original)
+        if (fallback) return fallback
+      }
+      continue
+    }
+
+    const normalizedMatch = normalized.match(it.match)
+    if (normalizedMatch) {
+      if (!it.toAction) continue
+      const action = it.toAction(normalizedMatch)
+      if (action) return action
+      continue
+    }
+
+    if (normalized !== original) {
+      const originalMatch = original.match(it.match)
+      if (originalMatch && it.toAction) {
+        const action = it.toAction(originalMatch)
+        if (action) return action
+      }
+    }
+  }
+  return undefined
+}
+
 function phraseToRegExp(phrase: string, entities?: NActionSpec['entities']) {
   const trimmed = phrase.trim()
   if (!entities || entities.length === 0) {
@@ -85,7 +145,11 @@ function phraseToRegExp(phrase: string, entities?: NActionSpec['entities']) {
   return new RegExp(pattern, 'i')
 }
 
-function deriveIntentsFromSpecs(specs: NActionSpec[], locale: string): NIntent[] {
+function deriveIntentsFromSpecs(
+  specs: NActionSpec[],
+  ctx: NContext,
+  locale: NLocale,
+): NIntent[] {
   const intents: NIntent[] = []
   for (const spec of specs) {
     const pack =
@@ -96,7 +160,8 @@ function deriveIntentsFromSpecs(specs: NActionSpec[], locale: string): NIntent[]
 
     const phrases = [...(pack.canonical ?? []), ...(pack.synonyms ?? [])]
     for (const phrase of phrases) {
-      const rx = phraseToRegExp(phrase, spec.entities)
+      const normalized = normalizeUtterance(ctx, phrase, locale)
+      const rx = phraseToRegExp(normalized, spec.entities)
       intents.push({
         name: `${spec.name}:${phrase}`,
         match: rx,
@@ -142,27 +207,8 @@ function getSpecsFromCtx(ctx: NContext): NActionSpec[] {
 // ---- Agente de voz ----
 export function voiceAgent(opts: NVoiceOptions = {}): NAgent {
   const wake = new Set((opts.wakeWords ?? []).map((w) => w.toLowerCase()))
-  const lang = opts.language ?? 'es-ES'
+  const explicitLocale = opts.language as NLocale | undefined
   const key = opts.keyWake ?? 'F2'
-
-  // motor de coincidencia
-  function resolveUtterance(text: string, intents: NIntent[]): NAction | null {
-    const t = text.trim()
-    for (const it of intents) {
-      if (typeof it.match === 'function') {
-        const a = it.match(t)
-        if (a) return a
-      } else {
-        const m = t.match(it.match)
-        if (m) {
-          if (!it.toAction) continue
-          const act = it.toAction(m)
-          if (act) return act
-        }
-      }
-    }
-    return null
-  }
 
   // Web Speech API (si disponible)
   function createRecognizer(ctx: NContext) {
@@ -171,7 +217,7 @@ export function voiceAgent(opts: NVoiceOptions = {}): NAgent {
     const SR = anyWin.SpeechRecognition || anyWin.webkitSpeechRecognition
     if (!SR) return null
     const rec = new SR()
-    rec.lang = lang
+    rec.lang = getActiveLocale(ctx, explicitLocale)
     rec.continuous = false
     rec.interimResults = false
     rec.maxAlternatives = 1
@@ -207,11 +253,12 @@ export function voiceAgent(opts: NVoiceOptions = {}): NAgent {
 
   function handleTranscript(text: string, ctx: NContext) {
     const specs = getSpecsFromCtx(ctx)
-    const derived = deriveIntentsFromSpecs(specs, lang)
+    const locale = getActiveLocale(ctx, explicitLocale)
+    const derived = deriveIntentsFromSpecs(specs, ctx, locale)
     const intents = [...(opts.intents ?? []), ...derived]
     if (!hasWakeWord(text)) return
     const content = stripWake(text)
-    const action = resolveUtterance(content, intents)
+    const action = resolveUtteranceNormalized(ctx, content, intents, locale)
     if (action) void ctx.act(action)
   }
 

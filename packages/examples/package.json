@@ -1,0 +1,13 @@
+{
+  "name": "@nura/examples",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "echo \"examples build\""
+  },
+  "dependencies": {
+    "@nura/core": "workspace:*",
+    "@nura/plugin-voice": "workspace:*"
+  }
+}

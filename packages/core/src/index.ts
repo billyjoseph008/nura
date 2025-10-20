@@ -82,6 +82,18 @@ export class Nura {
 export * from './types'
 export { createRegistry } from './create-registry'
 export { createActionCatalog, defineActionSpec } from './actions'
+export { createI18n } from './i18n'
+export { createLexicon } from './lexicon'
+export type {
+  NI18n,
+  NI18nConfig,
+  NLocale,
+  NNamespaces,
+  NMessages,
+  NBundle,
+} from './i18n'
+export type { NLexicon, NCanonical, NSense } from './lexicon'
+export { seedLexicon } from './seeds/lexicon'
 
 function resolveScope(action: NAction, config: NRegistry['config']): string | undefined {
   const resolved = config.resolveScope?.(action)
