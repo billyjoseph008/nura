@@ -45,6 +45,57 @@ const specs = [
     },
     validate: (payload) => typeof payload?.id === 'number' && payload.id > 0,
   }),
+  defineActionSpec({
+    name: 'filter_orders_by_range',
+    type: 'filter',
+    target: 'order',
+    scope: 'orders',
+    locale: 'es-CR',
+    entities: [{ name: 'range', type: 'range_number' }],
+    phrases: {
+      'es-CR': {
+        canonical: ['filtra órdenes entre {range}'],
+        synonyms: ['filtrar órdenes de {range}'],
+      },
+      'en-US': {
+        canonical: ['filter orders between {range}'],
+        synonyms: ['filter orders from {range}'],
+      },
+    },
+    validate: (payload) => {
+      const range = (payload as { range?: { min?: number; max?: number } } | undefined)?.range
+      return range?.min != null && range?.max != null
+    },
+  }),
+  defineActionSpec({
+    name: 'set_dark_mode',
+    type: 'set',
+    target: 'ui:darkmode',
+    scope: 'ui',
+    locale: 'es-CR',
+    entities: [{ name: 'enabled', type: 'boolean' }],
+    phrases: {
+      'es-CR': { canonical: ['activar modo oscuro {enabled}'] },
+      'en-US': { canonical: ['enable dark mode {enabled}'] },
+    },
+    validate: (payload) => typeof (payload as { enabled?: unknown } | undefined)?.enabled === 'boolean',
+  }),
+  defineActionSpec({
+    name: 'schedule_report',
+    type: 'create',
+    target: 'report',
+    scope: 'reports',
+    locale: 'es-CR',
+    entities: [
+      { name: 'when', type: 'date' },
+      { name: 'kind', type: 'enum', options: ['daily', 'weekly', 'monthly'] },
+    ],
+    phrases: {
+      'es-CR': { canonical: ['programa reporte {when} {kind}'] },
+      'en-US': { canonical: ['schedule report {when} {kind}'] },
+    },
+    validate: (payload) => (payload as { when?: unknown } | undefined)?.when instanceof Date,
+  }),
 ]
 
 const registry = createRegistry({
@@ -52,6 +103,12 @@ const registry = createRegistry({
   routes: {
     'open::menu:orders': async () => ({ ok: true }),
     'delete::order': async (payload) => ({ ok: true, message: `deleted ${payload?.id}` }),
+    'filter::order': async (payload) => ({ ok: true, message: JSON.stringify(payload) }),
+    'set::ui:darkmode': async (payload) => ({
+      ok: true,
+      message: `darkmode ${String((payload as { enabled?: unknown } | undefined)?.enabled)}`,
+    }),
+    'create::report': async (payload) => ({ ok: true, message: `scheduled ${(payload as any)?.kind ?? ''}` }),
   },
   specs,
   seedLexicon,

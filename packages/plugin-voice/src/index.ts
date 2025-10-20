@@ -1,5 +1,7 @@
 import type { NAgent, NContext, NAction, NActionSpec, NEntityDef } from '@nura/core'
-import type { NLocale } from '@nura/core/i18n'
+import { parseBoolean, parseNumber, parseDate, parseRangeNumber } from '@nura/core/entities'
+import type { NI18n, NLocale } from '@nura/core/i18n'
+import type { NLexicon } from '@nura/core/lexicon'
 import { similarity } from './fuzzy'
 
 // ---- Tipos auxiliares ----
@@ -62,9 +64,51 @@ function getWindow(): (Window & typeof globalThis & {
   }
 }
 
-function slotPattern(type: 'number' | 'string', custom?: RegExp) {
-  if (custom) return custom
-  return type === 'number' ? /([0-9]+)/ : /(.+)/
+function slotPattern(ent: NEntityDef): RegExp {
+  if (ent.pattern) return ent.pattern
+  switch (ent.type) {
+    case 'number':
+      return /(\d+(?:[.,]\d+)?)/
+    case 'boolean':
+      return /([a-zA-Záéíóúñ]+)/
+    case 'enum':
+      return /([a-zA-Z0-9_\-áéíóúñ]+)/
+    case 'date':
+      return /([\wáéíóúñ\-]+)/
+    case 'range_number':
+      return /([\w\s\-\–\—]+)/
+    case 'string':
+    default:
+      return /(.+?)/
+  }
+}
+
+function parseByType(
+  raw: string,
+  ent: NEntityDef,
+  ctx: { locale: NLocale; i18n: NI18n; lexicon: NLexicon },
+): unknown {
+  if (ent.parse) return ent.parse(raw, ctx)
+  switch (ent.type) {
+    case 'string':
+      return raw.trim()
+    case 'number':
+      return parseNumber(raw)
+    case 'enum': {
+      const v = raw.trim().toLowerCase()
+      if (!ent.options || ent.options.length === 0) return v
+      const ok = ent.options.map((o) => o.toLowerCase())
+      return ok.includes(v) ? v : undefined
+    }
+    case 'boolean':
+      return parseBoolean(raw, ctx)
+    case 'date':
+      return parseDate(raw, ctx)
+    case 'range_number':
+      return parseRangeNumber(raw)
+    default:
+      return raw
+  }
 }
 
 function getActiveLocale(ctx: NContext, explicit?: NLocale): NLocale {
@@ -134,7 +178,7 @@ function buildSyntheticMatch(
   let cursorOriginal = 0
 
   for (const entity of intent.entities) {
-    const basePattern = slotPattern(entity.type ?? 'string', entity.pattern)
+    const basePattern = slotPattern(entity)
     const normalizedPattern = ensureGlobal(basePattern)
     normalizedPattern.lastIndex = cursorNormalized
     let match = normalizedPattern.exec(normalized)
@@ -310,7 +354,7 @@ export function matchUtterance(
   return undefined
 }
 
-function phraseToRegExp(phrase: string, entities?: NActionSpec['entities']) {
+function phraseToRegExp(phrase: string, entities?: NEntityDef[]) {
   const trimmed = phrase.trim()
   if (!entities || entities.length === 0) {
     const simple = '^' + escapeRegex(trimmed) + '$'
@@ -325,9 +369,9 @@ function phraseToRegExp(phrase: string, entities?: NActionSpec['entities']) {
     const before = trimmed.slice(lastIndex, match.index)
     pattern += escapeRegex(before)
     const name = match[1]
-    const entity = entities.find((ent: NEntityDef) => ent.name === name)
-    const re = slotPattern(entity?.type ?? 'string', entity?.pattern)
-    pattern += re.source
+    const entity = entities.find((ent) => ent.name === name)
+    const slot = entity ? slotPattern(entity) : /(.+?)/
+    pattern += slot.source
     lastIndex = placeholder.lastIndex
   }
   pattern += escapeRegex(trimmed.slice(lastIndex))
@@ -365,21 +409,28 @@ function deriveIntentsFromSpecs(
         entities: spec.entities,
         toAction: (m) => {
           const payload: Record<string, unknown> = {}
+          const locale = ctx.registry.i18n.getLocale()
+          const parseCtx = {
+            locale,
+            i18n: ctx.registry.i18n,
+            lexicon: ctx.registry.lexicon,
+          }
           if (spec.entities && spec.entities.length) {
             let groupIdx = 1
             for (const ent of spec.entities) {
               const raw = m[groupIdx++]
               if (raw === undefined) continue
-              payload[ent.name] = ent.type === 'number' ? Number(raw) : raw
+              const value = parseByType(String(raw), ent, parseCtx)
+              payload[ent.name] = value
             }
           }
 
+          const finalPayload = Object.keys(payload).length ? payload : undefined
+
           if (spec.validate) {
-            const valid = spec.validate(Object.keys(payload).length ? payload : undefined)
+            const valid = spec.validate(finalPayload)
             if (!valid) return null
           }
-
-          const finalPayload = Object.keys(payload).length ? payload : undefined
 
           return {
             type: spec.type,

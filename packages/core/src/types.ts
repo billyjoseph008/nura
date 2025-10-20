@@ -8,6 +8,8 @@ export type NActionType =
   | 'create'
   | 'update'
   | 'delete'
+  | 'filter'
+  | 'set'
   | 'navigate'
   | 'focus'
   | 'speak'
@@ -16,12 +18,27 @@ export type NActionType =
 
 export type NLocale = string
 
-export type NEntityType = 'string' | 'number'
+export type NEntityType =
+  | 'string'
+  | 'number'
+  | 'enum'
+  | 'boolean'
+  | 'date'
+  | 'range_number'
 
-export type NEntityDef = {
+export interface NEntityDef {
   name: string
   type: NEntityType
+  options?: string[]
   pattern?: RegExp
+  parse?: (
+    raw: string,
+    ctx: { locale: NLocale; i18n: NI18n; lexicon: NLexicon },
+  ) => unknown
+  format?: (
+    val: unknown,
+    ctx: { locale: NLocale; i18n: NI18n; lexicon: NLexicon },
+  ) => string
 }
 
 export type ModernNAction = {
