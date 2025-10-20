@@ -2,6 +2,17 @@
   "name": "nura-demo",
   "version": "0.1.0",
   "private": true,
+  "description": "Example Next.js app showcasing Nura.js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nura-dev/nura.git",
+    "directory": "apps/demo"
+  },
+  "homepage": "https://github.com/nura-dev/nura/tree/main/apps/demo",
+  "bugs": {
+    "url": "https://github.com/nura-dev/nura/issues"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "echo \"(todo)\"",
@@ -13,7 +24,6 @@
     "@nura/core": "workspace:*",
     "@nura/dom": "workspace:*",
     "@nura/react": "workspace:*",
-    "@vercel/analytics": "^1.3.0",
     "next": "^15.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

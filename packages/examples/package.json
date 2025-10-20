@@ -2,7 +2,18 @@
   "name": "@nura/examples",
   "version": "0.1.0",
   "private": true,
+  "description": "Example scenarios demonstrating Nura.js usage",
   "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nura-dev/nura.git",
+    "directory": "packages/examples"
+  },
+  "homepage": "https://github.com/nura-dev/nura/tree/main/packages/examples",
+  "bugs": {
+    "url": "https://github.com/nura-dev/nura/issues"
+  },
   "scripts": {
     "build": "echo \"examples build\""
   },

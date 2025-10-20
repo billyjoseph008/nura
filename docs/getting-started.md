@@ -1,171 +1,73 @@
-# Getting Started with Nura.js
+# Getting Started
 
-This guide will help you get started with Nura.js in your project.
+Welcome to Nura.js! This guide walks you through installing dependencies, bootstrapping a project, and registering your first agent-friendly command.
 
-## Installation
+## Prerequisites
 
-Choose the package for your framework:
+- Node.js 18.18 or newer
+- pnpm 8+ (via Corepack) or npm/bun if you prefer
+- TypeScript 5 with `strict` mode enabled
 
-### React
+## Install the Core Package
 
-\`\`\`bash
-npm install @nura/react @nura/core @nura/dom
-# or
-pnpm add @nura/react @nura/core @nura/dom
-\`\`\`
+```bash
+pnpm add @nura/core
+```
 
-### Vue
+Want framework helpers?
 
-\`\`\`bash
-npm install @nura/vue @nura/core @nura/dom
-# or
-pnpm add @nura/vue @nura/core @nura/dom
-\`\`\`
+- React: `pnpm add @nura/react`
+- Vue: `pnpm add @nura/vue`
+- Svelte: `pnpm add @nura/svelte`
 
-### Svelte
+## Initialize Nura.js
 
-\`\`\`bash
-npm install @nura/svelte @nura/core @nura/dom
-# or
-pnpm add @nura/svelte @nura/core @nura/dom
-\`\`\`
+Create an entry point that sets up the provider for your app. Example using React:
 
-### Vanilla JavaScript
-
-\`\`\`bash
-npm install @nura/core @nura/dom
-# or
-pnpm add @nura/core @nura/dom
-\`\`\`
-
-## Basic Setup
-
-### React
-
-\`\`\`tsx
+```tsx
 import { NuraProvider } from '@nura/react'
+import { createRoot } from 'react-dom/client'
+import App from './App'
 
-function App() {
-  return (
-    <NuraProvider config={{ debug: true }}>
-      <YourApp />
-    </NuraProvider>
-  )
-}
-\`\`\`
+createRoot(document.getElementById('root')!).render(
+  <NuraProvider>
+    <App />
+  </NuraProvider>
+)
+```
 
-### Vue
+## Define Your First Command
 
-\`\`\`typescript
-import { createApp } from 'vue'
-import { NuraPlugin } from '@nura/vue'
-import App from './App.vue'
+Commands connect structured intents to executable logic.
 
-const app = createApp(App)
-app.use(NuraPlugin, { config: { debug: true } })
-app.mount('#app')
-\`\`\`
+```tsx
+import { useNuraCommand } from '@nura/react'
 
-### Svelte
-
-\`\`\`svelte
-<script>
-  import { NuraProvider } from '@nura/svelte'
-</script>
-
-<NuraProvider config={{ debug: true }}>
-  <YourApp />
-</NuraProvider>
-\`\`\`
-
-### Vanilla JavaScript
-
-\`\`\`typescript
-import { createRegistry } from '@nura/core'
-import { DOMIndexer } from '@nura/dom'
-
-const registry = createRegistry({ debug: true })
-const indexer = new DOMIndexer({ autoScan: true })
-\`\`\`
-
-## Your First Nura Action
-
-Let's create a simple action that opens a modal:
-
-### React
-
-\`\`\`tsx
-import { useNuraAction, NuraButton } from '@nura/react'
-
-function MyComponent() {
-  const [isOpen, setIsOpen] = useState(false)
-
-  useNuraAction({
-    verb: 'open',
-    scope: 'modal',
-    handler: () => setIsOpen(true)
+export function CheckoutButton() {
+  useNuraCommand('checkout', ({ context }) => {
+    console.log('Checking out for user', context.userId)
   })
 
   return (
-    <NuraButton scope="open-modal-button" onClick={() => setIsOpen(true)}>
-      Open Modal
-    </NuraButton>
+    <button data-nura-command="checkout">Checkout</button>
   )
 }
-\`\`\`
+```
 
-### Vue
+- `data-nura-command` exposes the action to agents, screen readers, and other tools.
+- `useNuraCommand` registers the handler with context-aware metadata.
 
-\`\`\`vue
-<script setup>
-import { ref } from 'vue'
-import { useNuraAction } from '@nura/vue'
+## Run Locally
 
-const isOpen = ref(false)
+```bash
+pnpm install
+pnpm dev
+```
 
-useNuraAction({
-  verb: 'open',
-  scope: 'modal',
-  handler: () => isOpen.value = true
-})
-</script>
-
-<template>
-  <button v-nura="{ scope: 'open-modal-button', act: ['click'] }"
-          @click="isOpen = true">
-    Open Modal
-  </button>
-</template>
-\`\`\`
-
-### Svelte
-
-\`\`\`svelte
-<script>
-  import { nura } from '@nura/svelte'
-  import { useNuraAction } from '@nura/svelte'
-  
-  let isOpen = false
-
-  useNuraAction({
-    verb: 'open',
-    scope: 'modal',
-    handler: () => isOpen = true
-  })
-</script>
-
-<button use:nura={{ scope: 'open-modal-button', act: ['click'] }}
-        on:click={() => isOpen = true}>
-  Open Modal
-</button>
-\`\`\`
+`pnpm dev` uses TurboRepo to run all active workspaces in watch mode.
 
 ## Next Steps
 
-- Learn about [Core Concepts](./core-concepts.md)
-- Explore the [API Reference](./api-reference.md)
-- Check out [Examples](./examples.md)
-- Read your framework's guide:
-  - [React Guide](./react-guide.md)
-  - [Vue Guide](./vue-guide.md)
-  - [Svelte Guide](./svelte-guide.md)
+- Explore the [Recipes](./recipes.md) for more complex scenarios like slot filling and validation.
+- Read the [Architecture](./architecture.md) overview to understand the building blocks.
+- Track upcoming features on the [Roadmap](./roadmap.md).

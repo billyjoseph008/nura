@@ -1,16 +1,38 @@
 {
   "name": "@nura/plugin-voice",
   "version": "0.1.0",
+  "description": "Voice plugin for Nura.js command registry",
   "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nura-dev/nura.git",
+    "directory": "packages/plugin-voice"
+  },
+  "homepage": "https://github.com/nura-dev/nura/tree/main/packages/plugin-voice",
+  "bugs": {
+    "url": "https://github.com/nura-dev/nura/issues"
+  },
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "exports": { ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" } },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "sideEffects": false,
   "scripts": {
     "build": "tsup src/index.ts --dts --format esm --clean",
     "dev": "tsup src/index.ts --dts --format esm --watch"
   },
-  "devDependencies": { "typescript": "^5.4.0", "tsup": "^8.0.1" },
-  "peerDependencies": { "@nura/core": ">=0.1.0" }
+  "keywords": ["nura", "voice", "commands"],
+  "peerDependencies": {
+    "@nura/core": ">=0.1.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.1",
+    "typescript": "^5.4.0"
+  }
 }
