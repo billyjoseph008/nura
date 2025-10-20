@@ -259,3 +259,5 @@ export function withVue(nura: Nura) {
     }
   }
 }
+
+export { installI18nDirective } from './i18n'

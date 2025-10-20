@@ -1,4 +1,6 @@
 import { createActionCatalog as createCoreActionCatalog } from './actions'
+import { createI18n, type NI18n, type NI18nConfig } from './i18n'
+import { createLexicon, type NLexicon } from './lexicon'
 import type {
   LegacyNuraAction,
   NAction,
@@ -26,6 +28,8 @@ export type CreateRegistryOptions = {
   audit?: NAudit
   routes?: Record<string, (payload?: any) => Promise<NResult> | NResult>
   specs?: NActionSpec[]
+  i18n?: Partial<NI18nConfig>
+  seedLexicon?: Array<{ locale: string; terms: Record<string, string> }>
 }
 
 export type CreateRegistryInput = NConfig | CreateRegistryOptions | undefined
@@ -121,6 +125,22 @@ export const createRegistry = (input: CreateRegistryInput = undefined): NRegistr
   const listeners = createListenerMap()
   const permissionStore = new Map<NuraScope, NuraPermission>()
   const permissionState = createDefaultPermissions(options.permissions)
+  const config = createDefaultConfig(options.config)
+
+  const i18nDefaultLocale =
+    options.i18n?.defaultLocale ?? config.app.locale ?? 'es-CR'
+
+  const i18n: NI18n = createI18n({
+    defaultLocale: i18nDefaultLocale,
+    fallbackLocales: options.i18n?.fallbackLocales ?? ['es', 'en'],
+    bundles: options.i18n?.bundles ?? {},
+    detect: options.i18n?.detect,
+  })
+
+  const lexicon: NLexicon = createLexicon()
+  for (const seed of options.seedLexicon ?? []) {
+    lexicon.bulk(seed.locale, seed.terms)
+  }
 
   const emit = (type: NuraEventType, data: unknown): void => {
     const event: NuraEvent = { type, data, timestamp: Date.now() }
@@ -186,8 +206,10 @@ export const createRegistry = (input: CreateRegistryInput = undefined): NRegistr
   return {
     actions,
     permissions: permissionState,
-    config: createDefaultConfig(options.config),
+    config,
     audit: options.audit,
+    i18n,
+    lexicon,
     registerAction(action: LegacyNuraAction) {
       actionStore.set(createActionKey(action.verb, action.scope), action)
       emit('action:registered', { action })

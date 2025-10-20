@@ -1,4 +1,10 @@
-import type { NAction, NActionCatalog, NActionSpec, NResult } from './types'
+import type {
+  ModernNAction,
+  NAction,
+  NActionCatalog,
+  NActionSpec,
+  NResult,
+} from './types'
 
 type ActionHandler = (payload?: any) => Promise<NResult> | NResult
 
@@ -23,16 +29,24 @@ export function createActionCatalog(
     }
   }
 
-  function keyFor(a: NAction) {
-    return `${'type' in a ? a.type : a.verb}::${'target' in a ? a.target ?? '' : a.scope ?? ''}`
+  function isModernAction(action: NAction): action is ModernNAction {
+    return 'type' in action
+  }
+
+  function keyFor(action: NAction) {
+    if (isModernAction(action)) {
+      return `${action.type}::${action.target ?? ''}`
+    }
+    return `${action.verb}::${action.scope ?? ''}`
   }
 
   return {
     async dispatch(action: NAction) {
       const k = keyFor(action)
-      const fn = handlers.get(k) ?? handlers.get('type' in action ? action.type : action.verb)
+      const fn = handlers.get(k) ?? handlers.get(isModernAction(action) ? action.type : action.verb)
       if (!fn) return { ok: false, message: `No handler for ${k}` }
-      return await fn('payload' in action ? action.payload : action.metadata)
+      const input = isModernAction(action) ? action.payload : action.metadata
+      return await fn(input)
     },
     listSpecs() {
       return [..._specs]
