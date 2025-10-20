@@ -18,6 +18,10 @@
       "import": "./dist/lexicon.js",
       "types": "./dist/lexicon.d.ts"
     },
+    "./entities": {
+      "import": "./dist/entities.js",
+      "types": "./dist/entities.d.ts"
+    },
     "./seeds/lexicon": {
       "import": "./dist/seeds/lexicon.js",
       "types": "./dist/seeds/lexicon.d.ts"
@@ -27,13 +31,14 @@
     "*": {
       "i18n": ["src/i18n.ts"],
       "lexicon": ["src/lexicon.ts"],
+      "entities": ["src/entities.ts"],
       "seeds/lexicon": ["src/seeds/lexicon.ts"]
     }
   },
   "sideEffects": false,
   "scripts": {
-    "build": "tsup src/index.ts src/i18n.ts src/lexicon.ts src/seeds/lexicon.ts --dts --format esm --clean",
-    "dev": "tsup src/index.ts src/i18n.ts src/lexicon.ts src/seeds/lexicon.ts --dts --format esm --watch",
+    "build": "tsup src/index.ts src/i18n.ts src/lexicon.ts src/entities.ts src/seeds/lexicon.ts --dts --format esm --clean",
+    "dev": "tsup src/index.ts src/i18n.ts src/lexicon.ts src/entities.ts src/seeds/lexicon.ts --dts --format esm --watch",
     "lint": "eslint .",
     "test": "echo \"(todo)\""
   },
