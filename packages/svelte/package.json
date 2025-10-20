@@ -2,6 +2,17 @@
   "name": "@nura/svelte",
   "version": "0.1.0",
   "description": "Svelte adapter for Nura.js",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nura-dev/nura.git",
+    "directory": "packages/svelte"
+  },
+  "homepage": "https://github.com/nura-dev/nura/tree/main/packages/svelte",
+  "bugs": {
+    "url": "https://github.com/nura-dev/nura/issues"
+  },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -15,11 +26,15 @@
   "scripts": {
     "build": "echo \"(todo)\"",
     "dev": "echo \"(todo)\"",
-    "lint": "tsc --noEmit",
+    "lint": "eslint .",
     "clean": "rm -rf dist"
   },
-  "keywords": ["nura", "svelte", "actions", "stores"],
-  "license": "MIT",
+  "keywords": [
+    "nura",
+    "svelte",
+    "actions",
+    "stores"
+  ],
   "peerDependencies": {
     "svelte": "^4.0.0 || ^5.0.0"
   },

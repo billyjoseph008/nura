@@ -1,18 +1,41 @@
 {
   "name": "@nura/vue",
   "version": "0.1.0",
+  "description": "Vue adapter for Nura.js",
   "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nura-dev/nura.git",
+    "directory": "packages/vue"
+  },
+  "homepage": "https://github.com/nura-dev/nura/tree/main/packages/vue",
+  "bugs": {
+    "url": "https://github.com/nura-dev/nura/issues"
+  },
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "exports": { ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" } },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "sideEffects": false,
-  "peerDependencies": { "vue": ">=3.3.0", "@nura/core": ">=0.1.0" },
   "scripts": {
     "build": "tsup src/index.ts --dts --format esm --clean",
     "dev": "tsup src/index.ts --dts --format esm --watch",
     "lint": "eslint .",
     "test": "echo \"(todo)\""
   },
-  "devDependencies": { "typescript": "^5.4.0", "tsup": "^8.0.1" }
+  "keywords": ["nura", "vue", "directives", "composables"],
+  "peerDependencies": {
+    "vue": ">=3.3.0",
+    "@nura/core": ">=0.1.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.1",
+    "typescript": "^5.4.0"
+  }
 }

@@ -1,163 +1,93 @@
 # Contributing to Nura.js
 
-Thank you for your interest in contributing to Nura.js! This document provides guidelines for contributing.
+Thanks for your interest in contributing! This guide explains how we collaborate, how to get set up locally, and what we expect from pull requests.
 
-## Development Setup
+## Getting in Touch
 
-1. Clone the repository:
+- **Bug reports & feature ideas**: Open an issue on GitHub using the appropriate template.
+- **Questions & support**: Start a discussion or join community channels listed in [SUPPORT.md](./SUPPORT.md).
+- **Security reports**: Follow the instructions in [SECURITY.md](./SECURITY.md).
 
-\`\`\`bash
-git clone https://github.com/nurajs/nura.git
-cd nura
-\`\`\`
+## Project Workflow
 
-2. Install dependencies:
+We track all planned work with GitHub issues. Each change should correspond to an issue before starting implementation.
 
-\`\`\`bash
+1. **Discuss** significant changes in an issue or RFC (see [GOVERNANCE.md](./GOVERNANCE.md)).
+2. **Fork & branch** from the default branch (`main`). Use short-lived branches named `type/brief-description` (e.g. `feat/add-intent-parser`).
+3. **Develop** your changes and keep commits focused.
+4. **Open a pull request** referencing the related issue. Fill out the PR template and request review from a maintainer.
+5. **Address review feedback** and keep your branch up to date with `main`.
+
+## Conventional Commits
+
+We use [Conventional Commits](https://www.conventionalcommits.org/) for all commit messages and PR titles. Common types include:
+
+- `feat`: user-facing feature
+- `fix`: bug fix
+- `docs`: documentation updates
+- `chore`: tooling, configuration, or meta changes
+- `refactor`, `perf`, `test`, `build`, `ci`
+
+Scope is optional but encouraged for packages (e.g. `feat(core): add slot validator`).
+
+## Development Environment
+
+Nura.js is a pnpm monorepo built with TypeScript and ESM.
+
+### Requirements
+
+- Node.js ≥ 18.18
+- pnpm ≥ 8 (via [Corepack](https://nodejs.org/api/corepack.html))
+
+### Setup
+
+```bash
+pnpm i -g corepack
+corepack enable
 pnpm install
-\`\`\`
+```
 
-3. Build all packages:
+### Useful Commands
 
-\`\`\`bash
-pnpm build
-\`\`\`
+| Command | Description |
+| --- | --- |
+| `pnpm dev` | Run all apps/packages in development mode via TurboRepo |
+| `pnpm -r build` | Build every package in topological order |
+| `pnpm -r test` | Execute tests for all workspaces |
+| `pnpm -r lint` | Run linting across all workspaces |
+| `pnpm format` | Format source and documentation with Prettier |
+| `pnpm changeset` | Create a Changeset for release notes |
 
-4. Start development:
+See workspace-level `package.json` files for additional scripts.
 
-\`\`\`bash
-pnpm dev
-\`\`\`
+## Testing Guidelines
 
-## Project Structure
+- Include automated tests for new features whenever possible.
+- Ensure `pnpm -r test`, `pnpm -r build`, and `pnpm -r lint` pass before requesting review.
+- Document manual verification steps in the PR template if automated tests are not feasible.
 
-\`\`\`
-nura/
-├── packages/
-│   ├── core/          # Core registry and types
-│   ├── dom/           # DOM indexing
-│   ├── react/         # React adapter
-│   ├── vue/           # Vue adapter
-│   └── svelte/        # Svelte adapter
-├── apps/
-│   └── demo/          # Demo application
-├── docs/              # Documentation
-└── scripts/           # Build scripts
-\`\`\`
+## Pull Request Checklist
 
-## Development Workflow
+Before requesting a review, please confirm:
 
-1. Create a new branch:
-
-\`\`\`bash
-git checkout -b feature/your-feature-name
-\`\`\`
-
-2. Make your changes
-
-3. Run tests:
-
-\`\`\`bash
-pnpm test
-\`\`\`
-
-4. Run linting:
-
-\`\`\`bash
-pnpm lint
-\`\`\`
-
-5. Build packages:
-
-\`\`\`bash
-pnpm build
-\`\`\`
-
-6. Commit your changes:
-
-\`\`\`bash
-git commit -m "feat: add new feature"
-\`\`\`
-
-We follow [Conventional Commits](https://www.conventionalcommits.org/):
-
-- `feat:` New feature
-- `fix:` Bug fix
-- `docs:` Documentation changes
-- `style:` Code style changes
-- `refactor:` Code refactoring
-- `test:` Test changes
-- `chore:` Build process or auxiliary tool changes
-
-7. Push and create a pull request:
-
-\`\`\`bash
-git push origin feature/your-feature-name
-\`\`\`
+- [ ] Tests and builds pass locally.
+- [ ] Linting runs without errors.
+- [ ] Documentation is updated (README, docs, examples).
+- [ ] Breaking changes are clearly documented, including migration steps.
+- [ ] You have added a Changeset when the change affects published packages.
 
 ## Code Style
 
-- Use TypeScript for all code
-- Follow the existing code style
-- Use meaningful variable and function names
-- Add comments for complex logic
-- Keep functions small and focused
+- TypeScript strict mode is required; do not disable compiler checks.
+- Prefer small, composable modules and follow SOLID principles.
+- Avoid introducing new runtime dependencies without prior discussion.
 
-## Testing
+## Release Process
 
-- Write tests for new features
-- Ensure all tests pass before submitting PR
-- Aim for high test coverage
+We follow [Semantic Versioning](https://semver.org/) and publish releases using Changesets.
 
-## Documentation
+1. Contributors create a Changeset with `pnpm changeset` describing the change and bump type.
+2. The automated release workflow opens a release PR summarizing pending changes.
+3. Once approved, the release PR is merged and the workflow tags a new version and publishes to npm.
 
-- Update documentation for new features
-- Add JSDoc comments to public APIs
-- Include examples in documentation
-- Keep README files up to date
-
-## Pull Request Process
-
-1. Update the README.md with details of changes if needed
-2. Update the documentation
-3. The PR will be merged once you have approval from maintainers
-
-## Reporting Issues
-
-When reporting issues, please include:
-
-- Nura.js version
-- Framework and version (React, Vue, Svelte)
-- Browser and version
-- Steps to reproduce
-- Expected behavior
-- Actual behavior
-- Code example if possible
-
-## Feature Requests
-
-We welcome feature requests! Please:
-
-- Check if the feature already exists
-- Explain the use case
-- Provide examples if possible
-- Be open to discussion
-
-## Code of Conduct
-
-- Be respectful and inclusive
-- Welcome newcomers
-- Focus on constructive feedback
-- Help others learn
-
-## Questions?
-
-- Open an issue for questions
-- Join our Discord community
-- Check existing documentation
-
-## License
-
-By contributing, you agree that your contributions will be licensed under the MIT License.
-
-Thank you for contributing to Nura.js!
+Thanks for helping us make Nura.js better! ❤️

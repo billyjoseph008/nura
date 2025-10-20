@@ -1,7 +1,18 @@
 {
   "name": "@nura/core",
   "version": "0.1.0",
+  "description": "Core primitives for building AI-friendly interfaces with Nura.js",
   "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nura-dev/nura.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/nura-dev/nura/tree/main/packages/core",
+  "bugs": {
+    "url": "https://github.com/nura-dev/nura/issues"
+  },
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -42,6 +53,12 @@
     "lint": "eslint .",
     "test": "echo \"(todo)\""
   },
+  "keywords": [
+    "nura",
+    "ai",
+    "semantic",
+    "commands"
+  ],
   "devDependencies": {
     "tsup": "^8.0.1",
     "typescript": "^5.4.0"
