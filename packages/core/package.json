@@ -13,39 +13,47 @@
   "bugs": {
     "url": "https://github.com/nura-dev/nura/issues"
   },
-  "main": "dist/index.js",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     },
     "./i18n": {
-      "import": "./dist/i18n.js",
-      "types": "./dist/i18n.d.ts"
+      "types": "./dist/i18n.d.ts",
+      "import": "./dist/i18n.js"
     },
     "./lexicon": {
-      "import": "./dist/lexicon.js",
-      "types": "./dist/lexicon.d.ts"
+      "types": "./dist/lexicon.d.ts",
+      "import": "./dist/lexicon.js"
     },
     "./entities": {
-      "import": "./dist/entities.js",
-      "types": "./dist/entities.d.ts"
+      "types": "./dist/entities.d.ts",
+      "import": "./dist/entities.js"
     },
     "./seeds/lexicon": {
-      "import": "./dist/seeds/lexicon.js",
-      "types": "./dist/seeds/lexicon.d.ts"
-    }
+      "types": "./dist/seeds/lexicon.d.ts",
+      "import": "./dist/seeds/lexicon.js"
+    },
+    "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
-      "i18n": ["src/i18n.ts"],
-      "lexicon": ["src/lexicon.ts"],
-      "entities": ["src/entities.ts"],
-      "seeds/lexicon": ["src/seeds/lexicon.ts"]
+      "": ["dist/index.d.ts"],
+      "i18n": ["dist/i18n.d.ts"],
+      "lexicon": ["dist/lexicon.d.ts"],
+      "entities": ["dist/entities.d.ts"],
+      "seeds/lexicon": ["dist/seeds/lexicon.d.ts"]
     }
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "package.json"
+  ],
   "sideEffects": false,
   "scripts": {
     "build": "tsup src/index.ts src/i18n.ts src/lexicon.ts src/entities.ts src/seeds/lexicon.ts --dts --format esm --clean",

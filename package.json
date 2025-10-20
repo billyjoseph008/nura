@@ -18,7 +18,7 @@
   ],
   "scripts": {
     "build": "pnpm -r --filter @nura/* run build",
-    "clean": "turbo run clean && rm -rf node_modules",
+    "clean": "pnpm -r exec rimraf dist && turbo run clean && rm -rf node_modules",
     "dev": "turbo run dev",
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
     "lint": "turbo run lint",
@@ -55,6 +55,7 @@
     "tailwindcss": "4.1.14",
     "turbo": "^2.0.0",
     "typescript": "^5",
+    "rimraf": "^5.0.7",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "eslint": "^8.57.0",
