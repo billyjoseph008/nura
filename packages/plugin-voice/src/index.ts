@@ -371,7 +371,7 @@ function phraseToRegExp(phrase: string, entities?: NEntityDef[]) {
   return new RegExp(pattern, 'i')
 }
 
-function deriveIntentsFromSpecs(
+export function deriveIntentsFromSpecs(
   specs: NActionSpec[],
   ctx: NContext,
   locale: NLocale,

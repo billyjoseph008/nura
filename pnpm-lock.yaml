@@ -124,6 +124,9 @@ importers:
       '@nura/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@nura/devtools-lexicon':
+        specifier: workspace:*
+        version: link:../../packages/devtools-lexicon
       '@nura/vue':
         specifier: workspace:*
         version: link:../../packages/vue
@@ -152,6 +155,18 @@ importers:
       typescript:
         specifier: ^5.4.0
         version: 5.9.3
+
+  packages/devtools-lexicon:
+    dependencies:
+      '@nura/core':
+        specifier: '>=0.1.0'
+        version: link:../core
+      '@nura/plugin-voice':
+        specifier: '>=0.1.0'
+        version: link:../plugin-voice
+      vue:
+        specifier: '>=3.3.0'
+        version: 3.5.22(typescript@5.9.3)
 
   packages/dom:
     dependencies:
