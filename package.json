@@ -21,7 +21,7 @@
     "clean": "pnpm -r exec rimraf dist && turbo run clean && rm -rf node_modules",
     "dev": "turbo run dev",
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
-    "lint": "turbo run lint",
+    "lint": "pnpm -r --if-present lint",
     "test": "turbo run test",
     "changeset": "changeset",
     "release": "changeset version && pnpm -r build && changeset publish"

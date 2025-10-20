@@ -15,7 +15,8 @@
     "url": "https://github.com/nura-dev/nura/issues"
   },
   "scripts": {
-    "build": "echo \"examples build\""
+    "build": "echo \"examples build\"",
+    "lint": "eslint . --ext .ts,.tsx,.vue --max-warnings=0"
   },
   "dependencies": {
     "@nura/core": "workspace:*",

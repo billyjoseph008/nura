@@ -25,7 +25,8 @@
   "sideEffects": false,
   "scripts": {
     "build": "tsup src/index.ts --dts --format esm --clean",
-    "dev": "tsup src/index.ts --dts --format esm --watch"
+    "dev": "tsup src/index.ts --dts --format esm --watch",
+    "lint": "eslint . --ext .ts,.tsx,.vue --max-warnings=0"
   },
   "keywords": ["nura", "voice", "commands"],
   "dependencies": {
