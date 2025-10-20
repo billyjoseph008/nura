@@ -138,17 +138,6 @@ function normalizeUtterance(
     .join(' ')
 }
 
-type TelemetryEmitter = { emit?: (event: string, payload: Record<string, unknown>) => void }
-
-function emitTelemetry(
-  ctx: NContext,
-  event: string,
-  payload: Record<string, unknown>,
-): void {
-  const registry = ctx.registry as { telemetry?: TelemetryEmitter } | undefined
-  registry?.telemetry?.emit?.(event, payload)
-}
-
 function tokensForWeight(text: string): string[] {
   return text
     .trim()
@@ -256,11 +245,35 @@ export function matchUtterance(
     if (typeof intent.match === 'function') {
       const actionNormalized = intent.match(normalized)
       if (actionNormalized) {
+        ctx.registry.telemetry.emit('voice.intent.candidates', {
+          textOriginal: text,
+          normText: normalized,
+          locale,
+          candidates: [
+            {
+              name: intent.name,
+              score: 1,
+            },
+          ],
+        })
         return actionNormalized
       }
       if (normalized !== original) {
         const fallback = intent.match(original)
-        if (fallback) return fallback
+        if (fallback) {
+          ctx.registry.telemetry.emit('voice.intent.candidates', {
+            textOriginal: text,
+            normText: normalized,
+            locale,
+            candidates: [
+              {
+                name: intent.name,
+                score: 1,
+              },
+            ],
+          })
+          return fallback
+        }
       }
       continue
     }
@@ -292,27 +305,18 @@ export function matchUtterance(
   }
 
   scored.sort((a, b) => b.score - a.score)
-  const best = scored[0]
-
-  emitTelemetry(ctx, 'voice.match.candidates', {
+  ctx.registry.telemetry.emit('voice.intent.candidates', {
     textOriginal: text,
     normText: normalized,
     locale,
     candidates: scored.map((s) => ({
-      intent: s.intent.name,
+      name: s.intent.name,
       score: s.score,
     })),
   })
 
-  if (!best) {
-    emitTelemetry(ctx, 'voice.match.rejected', {
-      textOriginal: text,
-      normText: normalized,
-      locale,
-      threshold,
-    })
-    return undefined
-  }
+  const best = scored[0]
+  if (!best) return undefined
 
   let finalAction: NAction | null | undefined
   if (best.match && best.intent.toAction) {
@@ -335,22 +339,9 @@ export function matchUtterance(
   }
 
   if (finalAction && best.score >= threshold) {
-    emitTelemetry(ctx, 'voice.match.selected', {
-      intent: best.intent.name,
-      score: best.score,
-      textOriginal: text,
-      normText: normalized,
-      locale,
-    })
     return finalAction
   }
 
-  emitTelemetry(ctx, 'voice.match.rejected', {
-    textOriginal: text,
-    normText: normalized,
-    locale,
-    threshold,
-  })
   return undefined
 }
 
@@ -501,6 +492,9 @@ export function voiceAgent(opts: NVoiceOptions = {}): NAgent {
   }
 
   function handleTranscript(text: string, ctx: NContext) {
+    const tel = ctx.registry.telemetry
+    tel.emit('voice.input', { textOriginal: text })
+
     if (!hasWakeWord(text)) return
     const content = stripWake(text)
     if (!content.trim()) return
@@ -515,14 +509,29 @@ export function voiceAgent(opts: NVoiceOptions = {}): NAgent {
     }
 
     const detected = detectLocale(content, langCandidates)
+    tel.emit('voice.locale.detected', { detected, candidates: langCandidates })
     ctx.registry.i18n.setLocale(detected)
 
     const specs = getSpecsFromCtx(ctx)
     const derived = deriveIntentsFromSpecs(specs, ctx, detected)
+    tel.emit('voice.intents.derived', { count: derived.length, locale: detected })
     const intents = [...(opts.intents ?? []), ...derived]
 
     const action = matchUtterance(ctx, content, intents, { fuzzy: true, threshold: 0.82 })
-    if (action) void ctx.act(action)
+    if (action) {
+      tel.emit('voice.intent.selected', {
+        action,
+        locale: detected,
+        textOriginal: content,
+      })
+      void ctx.act(action)
+    } else {
+      tel.emit('voice.intent.rejected', {
+        textOriginal: content,
+        locale: detected,
+        reason: 'below_threshold_or_no_match',
+      })
+    }
   }
 
   let rec: NuraSpeechRecognition | null = null

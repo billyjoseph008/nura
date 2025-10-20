@@ -23,7 +23,9 @@ export interface NI18n {
   resolveKey(locale: NLocale, ns: NNamespaces, key: string): string | undefined
 }
 
-export function createI18n(cfg: NI18nConfig): NI18n {
+export function createI18n(
+  cfg: NI18nConfig & { telemetry?: { emit?: Function } },
+): NI18n {
   const bundles: Record<NLocale, NBundle> = structuredClone(cfg.bundles ?? {})
   let _locale: NLocale = cfg.detect?.() ?? cfg.defaultLocale
 
@@ -69,8 +71,20 @@ export function createI18n(cfg: NI18nConfig): NI18n {
     t(ns, key, vars) {
       const raw =
         this.resolveKey(_locale, ns, key) ??
-        this.resolveKey(cfg.defaultLocale, ns, key) ??
-        key
+        this.resolveKey(cfg.defaultLocale, ns, key)
+      if (raw == null) {
+        cfg.telemetry?.emit?.('i18n.miss', {
+          ns,
+          key,
+          locale: _locale,
+          fallbacksTried: [
+            _locale,
+            _locale.split('-')[0],
+            ...(cfg.fallbackLocales ?? []),
+          ],
+        })
+        return key
+      }
       return interpolate(raw, vars)
     },
   }

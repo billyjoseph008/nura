@@ -14,27 +14,53 @@ export interface NLexicon {
   bulk(locale: NLocale, batch: Record<string, NCanonical>): void
 }
 
-export function createLexicon(): NLexicon {
+export function createLexicon(telemetry?: { emit?: Function }): NLexicon {
   const entries: Record<NLocale, Record<string, NSense>> = {}
   return {
     entries,
     register(locale, term, sense) {
+      const lower = term.toLowerCase()
       const l = (entries[locale] ??= {})
-      l[term.toLowerCase()] = { canonical: sense.canonical, weight: sense.weight ?? 1 }
+      l[lower] = { canonical: sense.canonical, weight: sense.weight ?? 1 }
+      telemetry?.emit?.('lexicon.register', {
+        locale,
+        term: lower,
+        canonical: sense.canonical,
+      })
     },
     bulk(locale, batch) {
       const l = (entries[locale] ??= {})
       for (const [k, v] of Object.entries(batch)) {
-        l[k.toLowerCase()] = { canonical: v, weight: 1 }
+        const lower = k.toLowerCase()
+        l[lower] = { canonical: v, weight: 1 }
+        telemetry?.emit?.('lexicon.bulk', {
+          locale,
+          term: lower,
+          canonical: v,
+        })
       }
     },
     normalize(locale, term) {
       const lower = term.toLowerCase().trim()
       const pack = entries[locale] ?? {}
-      if (pack[lower]) return pack[lower].canonical
+      if (pack[lower]) {
+        const result = pack[lower].canonical
+        telemetry?.emit?.('lexicon.normalize', {
+          locale,
+          term: lower,
+          result,
+        })
+        return result
+      }
       const short = locale.split('-')[0]
       const base = entries[short] ?? {}
-      return base[lower]?.canonical
+      const result = base[lower]?.canonical
+      telemetry?.emit?.('lexicon.normalize', {
+        locale,
+        term: lower,
+        result: result ?? null,
+      })
+      return result
     },
   }
 }

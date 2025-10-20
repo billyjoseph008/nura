@@ -84,6 +84,7 @@ export { createRegistry } from './create-registry'
 export { createActionCatalog, defineActionSpec } from './actions'
 export { createI18n } from './i18n'
 export { createLexicon } from './lexicon'
+export { createTelemetry } from './telemetry'
 export * from './entities'
 export type {
   NI18n,
@@ -94,6 +95,7 @@ export type {
   NBundle,
 } from './i18n'
 export type { NLexicon, NCanonical, NSense } from './lexicon'
+export type { NTelemetry, NTelemetryEvent, NTelemetryHandler } from './telemetry'
 export { seedLexicon } from './seeds/lexicon'
 
 function resolveScope(action: NAction, config: NRegistry['config']): string | undefined {
