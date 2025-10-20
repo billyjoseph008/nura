@@ -90,6 +90,9 @@ importers:
       prettier:
         specifier: ^3.3.0
         version: 3.6.2
+      rimraf:
+        specifier: ^5.0.7
+        version: 5.0.10
       tailwindcss:
         specifier: 4.1.14
         version: 4.1.14
@@ -208,7 +211,7 @@ importers:
   packages/plugin-voice:
     dependencies:
       '@nura/core':
-        specifier: '>=0.1.0'
+        specifier: workspace:*
         version: link:../core
     devDependencies:
       tsup:
@@ -265,7 +268,7 @@ importers:
   packages/vue:
     dependencies:
       '@nura/core':
-        specifier: '>=0.1.0'
+        specifier: workspace:*
         version: link:../core
       vue:
         specifier: '>=3.3.0'
@@ -4000,6 +4003,13 @@ packages:
     hasBin: true
     dependencies:
       glob: 7.2.3
+    dev: true
+
+  /rimraf@5.0.10:
+    resolution: {integrity: sha512-l0OE8wL34P4nJH/H2ffoaniAokM2qSmrtXHmlpvYr5AVVX8msAyW0l8NVJFDxlSK4u3Uh/f41cQheDVdnYijwQ==}
+    hasBin: true
+    dependencies:
+      glob: 10.4.5
     dev: true
 
   /rollup@4.52.5:

@@ -30,6 +30,9 @@
     "test": "echo \"(todo)\""
   },
   "keywords": ["nura", "vue", "directives", "composables"],
+  "dependencies": {
+    "@nura/core": "workspace:*"
+  },
   "peerDependencies": {
     "vue": ">=3.3.0",
     "@nura/core": ">=0.1.0"

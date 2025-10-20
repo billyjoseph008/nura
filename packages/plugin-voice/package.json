@@ -28,6 +28,9 @@
     "dev": "tsup src/index.ts --dts --format esm --watch"
   },
   "keywords": ["nura", "voice", "commands"],
+  "dependencies": {
+    "@nura/core": "workspace:*"
+  },
   "peerDependencies": {
     "@nura/core": ">=0.1.0"
   },

@@ -97,7 +97,7 @@ function parseByType(
     case 'enum': {
       const v = raw.trim().toLowerCase()
       if (!ent.options || ent.options.length === 0) return v
-      const ok = ent.options.map((o) => o.toLowerCase())
+      const ok = ent.options.map((option: string) => option.toLowerCase())
       return ok.includes(v) ? v : undefined
     }
     case 'boolean':
