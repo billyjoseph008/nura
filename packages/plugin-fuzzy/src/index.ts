@@ -1,1 +1,1 @@
-export * from './fuzzy.js'
+export * from './fuzzy'

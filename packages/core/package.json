@@ -71,9 +71,9 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsup src/index.ts src/i18n.ts src/lexicon.ts src/entities.ts src/seeds/lexicon.ts src/registry.ts src/actions.ts src/nlp/numerals.ts --dts --format esm --clean",
-    "dev": "tsup src/index.ts src/i18n.ts src/lexicon.ts src/entities.ts src/seeds/lexicon.ts src/registry.ts src/actions.ts src/nlp/numerals.ts --dts --format esm --watch",
-    "lint": "eslint . --ext .ts,.tsx,.vue --max-warnings=0",
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "lint": "eslint . --ext .ts,.tsx",
     "test": "pnpm build && node --test \"test/**/*.mjs\""
   },
   "keywords": [
@@ -83,7 +83,10 @@
     "commands"
   ],
   "devDependencies": {
-    "tsup": "^8.0.1",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "rollup": "^4.24.0",
+    "rollup-plugin-dts": "^6.1.0",
     "typescript": "^5.4.0"
   },
   "dependencies": {

@@ -111,8 +111,8 @@ function isVowel(ch: string): boolean {
 function soundexLikeEsEn(str: string, locale: 'es' | 'en'): string {
   const value = normalize(str)
   if (!value) return ''
-  const upper = value.toUpperCase()
-  let result = upper[0] ?? ''
+    const upper = value.toUpperCase()
+    let result = upper.charAt(0)
   let previousCode = letterCode(result, locale)
   for (let i = 1; i < upper.length; i++) {
     const code = letterCode(upper[i], locale)
@@ -331,7 +331,7 @@ function scoreByStrategy(
     phoneticScore = Math.max(phoneticScore, 0.86)
   }
 
-  const prefixBonus = normalizedCandidate.startsWith(normalizedInput[0] ?? '') ? 0.03 : 0
+    const prefixBonus = normalizedCandidate.startsWith(normalizedInput.charAt(0)) ? 0.03 : 0
 
   if (strategy === 'damerau') {
     return {
@@ -381,9 +381,9 @@ export function matchFuzzy(
   candidates: string[],
   opts: FuzzyMatchOpts = {},
 ): MatchResult | null {
-  const { strategy = 'hybrid', minConfidence = DEFAULT_MIN_CONFIDENCE, locale = 'es' } = opts
-  if (!input || candidates.length === 0) return null
-  const localeSafe = locale ?? 'es'
+    const { strategy = 'hybrid', minConfidence = DEFAULT_MIN_CONFIDENCE, locale = 'es' } = opts
+    if (!input || candidates.length === 0) return null
+    const localeSafe = locale
   let best: MatchResult | null = null
   for (const candidate of candidates) {
     const scored = scoreByStrategy(input, candidate, strategy, localeSafe)

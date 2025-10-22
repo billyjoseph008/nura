@@ -1,28 +1,56 @@
 export type NTelemetryEvent = string
-export type NTelemetryHandler = (payload: any) => void
+
+export type NTelemetryPayload = Record<string, unknown>
+
+export type NTelemetryHandler = (payload: NTelemetryPayload) => void
+
+export type NTelemetryWildcardHandler = (
+  payload: NTelemetryPayload & { event: NTelemetryEvent },
+) => void
 
 export interface NTelemetry {
-  on(event: NTelemetryEvent | '*', handler: NTelemetryHandler): void
-  off(event: NTelemetryEvent | '*', handler: NTelemetryHandler): void
-  emit(event: NTelemetryEvent, payload: any): void
+  on(event: '*', handler: NTelemetryWildcardHandler): void
+  on(event: NTelemetryEvent, handler: NTelemetryHandler): void
+  off(event: '*', handler: NTelemetryWildcardHandler): void
+  off(event: NTelemetryEvent, handler: NTelemetryHandler): void
+  emit(event: NTelemetryEvent, payload?: NTelemetryPayload): void
 }
 
+type InternalHandler = (payload: NTelemetryPayload | (NTelemetryPayload & { event: string })) => void
+
 export function createTelemetry(): NTelemetry {
-  const map = new Map<string, Set<NTelemetryHandler>>()
-  function _get(e: string) {
-    if (!map.has(e)) map.set(e, new Set())
-    return map.get(e)!
+  const map = new Map<string | '*', Set<InternalHandler>>()
+
+  function getHandlers(event: string | '*'): Set<InternalHandler> {
+    if (!map.has(event)) {
+      map.set(event, new Set())
+    }
+
+    return map.get(event) as Set<InternalHandler>
   }
+
   return {
-    on(e, h) {
-      _get(e).add(h)
+    on(event, handler) {
+      getHandlers(event).add(handler as InternalHandler)
     },
-    off(e, h) {
-      _get(e).delete(h)
+    off(event, handler) {
+      getHandlers(event).delete(handler as InternalHandler)
     },
-    emit(e, p) {
-      for (const h of _get(e)) h(p)
-      for (const h of _get('*')) h({ event: e, ...p })
+    emit(event, payload) {
+      const normalized: NTelemetryPayload = payload ?? {}
+
+      for (const handler of getHandlers(event)) {
+        handler(normalized)
+      }
+
+      const wildcardPayload: NTelemetryPayload & { event: NTelemetryEvent } = {
+        event,
+        ...normalized,
+      }
+
+      for (const handler of getHandlers('*')) {
+        handler(wildcardPayload)
+      }
     },
   }
 }

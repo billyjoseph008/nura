@@ -6,25 +6,23 @@ import type {
   NResult,
 } from './types'
 
-type ActionHandler = (payload?: any) => Promise<NResult> | NResult
+type ActionPayload = Record<string, unknown> | undefined
 
-type HandlerRecord = Record<string, ActionHandler>
+type ActionHandler = (payload: ActionPayload) => Promise<NResult> | NResult
 
-function isRecord(value: unknown): value is HandlerRecord {
-  return typeof value === 'object' && value !== null
-}
+type HandlerMapInput = Record<string, unknown>
 
 export function createActionCatalog(
-  initial?: HandlerRecord,
+  initial?: HandlerMapInput,
   specs?: NActionSpec[],
 ): NActionCatalog {
   const handlers = new Map<string, ActionHandler>()
   const _specs: NActionSpec[] = Array.isArray(specs) ? [...specs] : []
 
-  if (isRecord(initial)) {
-    for (const [k, fn] of Object.entries(initial)) {
-      if (typeof fn === 'function') {
-        handlers.set(k, fn)
+  if (typeof initial === 'object' && initial !== null) {
+    for (const [key, maybeHandler] of Object.entries(initial)) {
+      if (typeof maybeHandler === 'function') {
+        handlers.set(key, maybeHandler as ActionHandler)
       }
     }
   }
