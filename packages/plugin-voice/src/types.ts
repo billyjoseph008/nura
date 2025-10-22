@@ -57,6 +57,8 @@ export type RankDebugEvent = {
   topK: RankedIntent[]
   tokensCompared: TokenComparison[]
   entitiesParsed: Record<string, unknown>
+  threshold: number | null
+  requireConfirm: boolean
 }
 
 export type IntentMatchResult = {

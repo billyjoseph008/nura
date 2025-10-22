@@ -64,24 +64,94 @@ export function detectWake(
 }
 
 export function stripWake(input: string, result: MatchResult | null): string {
-  if (!result || !result.matchedTokens || result.matchedTokens.length === 0) {
-    return input.trim()
-  }
-  const tokens = tokenizeWithOffsets(input)
-  const matched = result.matchedTokens[0]
-  const idx = matched.index ?? tokens.findIndex((t) => t.token.toLowerCase() === matched.token)
-  if (idx == null || idx < 0 || !tokens[idx]) return input.trim()
-  let start = tokens[idx]!.start
-  let end = tokens[idx]!.end
-  if (idx > 0) {
-    const prev = tokens[idx - 1]!
-    if (isFiller(prev.token)) {
-      start = prev.start
+  const trimmed = input.trim()
+  if (!trimmed) return ''
+  if (!result) return trimmed
+
+  const tokens = tokenizeWithOffsets(trimmed)
+  if (tokens.length === 0) return trimmed
+
+  const indexes = (result.matchedTokens ?? [])
+    .map((entry) => entry.index)
+    .filter((idx): idx is number => typeof idx === 'number' && idx >= 0 && idx < tokens.length)
+
+  let start: number | null = null
+  let end: number | null = null
+  let leftIndex: number | null = null
+  let rightIndex: number | null = null
+
+  if (indexes.length > 0) {
+    indexes.sort((a, b) => a - b)
+    leftIndex = indexes[0]!
+    rightIndex = indexes[indexes.length - 1]!
+    start = tokens[leftIndex].start
+    end = tokens[rightIndex].end
+  } else {
+    const value = (result.value ?? '').trim().toLowerCase()
+    if (value) {
+      const lower = trimmed.toLowerCase()
+      const found = lower.indexOf(value)
+      if (found >= 0) {
+        start = found
+        end = found + value.length
+        leftIndex = tokens.findIndex(
+          (token) => token.start <= found && token.end >= found,
+        )
+        if (leftIndex === -1) {
+          leftIndex = tokens.findIndex((token) => token.start >= found)
+        }
+        if (leftIndex !== -1) {
+          for (let i = tokens.length - 1; i >= leftIndex; i--) {
+            if (tokens[i]!.start < (end ?? 0)) {
+              rightIndex = i
+              break
+            }
+          }
+        }
+      }
     }
   }
-  const before = input.slice(0, start).trim()
-  const after = input.slice(end).trim()
-  return [before, after].filter(Boolean).join(' ').trim()
+
+  if (start == null || end == null) return trimmed
+
+  let startIndex = start
+  let endIndex = end
+
+  if (leftIndex == null || leftIndex < 0) {
+    leftIndex = tokens.findIndex((token) => token.start >= startIndex)
+  }
+  if (leftIndex < 0) leftIndex = 0
+
+  if (rightIndex == null || rightIndex < 0) {
+    for (let i = tokens.length - 1; i >= leftIndex; i--) {
+      if (tokens[i]!.end > startIndex) {
+        rightIndex = i
+        break
+      }
+    }
+  }
+  if (rightIndex == null || rightIndex < leftIndex) {
+    rightIndex = leftIndex
+  }
+
+  while (leftIndex > 0 && isFiller(tokens[leftIndex - 1]!.token)) {
+    leftIndex -= 1
+    startIndex = tokens[leftIndex]!.start
+  }
+
+  while (endIndex < trimmed.length) {
+    const char = trimmed.charAt(endIndex)
+    if (!/[\s,.;:!?¡¿-]/.test(char)) {
+      break
+    }
+    endIndex += 1
+  }
+
+  const before = trimmed.slice(0, startIndex).trim()
+  const after = trimmed.slice(endIndex).trim()
+  if (!before) return after
+  if (!after) return before
+  return `${before} ${after}`.replace(/\s+/g, ' ').trim()
 }
 
 function tokenizeWithOffsets(input: string): Array<{ token: string; start: number; end: number }> {
