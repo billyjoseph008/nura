@@ -72,6 +72,14 @@
         "packages/plugin-voice/dist/*",
         "packages/plugin-voice/src/*"
       ],
+      "@nura/plugin-fuzzy": [
+        "packages/plugin-fuzzy/dist/index.d.ts",
+        "packages/plugin-fuzzy/src/index.ts"
+      ],
+      "@nura/plugin-fuzzy/*": [
+        "packages/plugin-fuzzy/dist/*",
+        "packages/plugin-fuzzy/src/*"
+      ],
       "@nura/devtools-lexicon": [
         "packages/devtools-lexicon/dist/index.d.ts",
         "packages/devtools-lexicon/src/index.ts"

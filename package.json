@@ -23,6 +23,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
     "lint": "pnpm -r --if-present lint",
     "test": "turbo run test",
+    "test:fuzzy": "pnpm --filter @nura/plugin-fuzzy test",
     "changeset": "changeset",
     "release": "changeset version && pnpm -r build && changeset publish"
   },
