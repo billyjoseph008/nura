@@ -3,7 +3,7 @@
 [![CI](https://github.com/nura-dev/nura/actions/workflows/ci.yml/badge.svg)](https://github.com/nura-dev/nura/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/@nura/core?label=%40nura%2Fcore)](https://www.npmjs.com/package/@nura/core)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-ffa500.svg)](https://www.conventionalcommits.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](../../LICENSE)
 
 > **Make your app breathe.** Nura.js is a TypeScript-first framework for shipping AI-friendly, accessible, and automation-ready web experiences across frameworks.
 
@@ -48,7 +48,7 @@ function App() {
 }
 ```
 
-More examples and framework-specific guides live in [`docs/tutorials/recipes.md`](./docs/tutorials/recipes.md).
+More examples and framework-specific guides live in [`docs/tutorials/recipes.md`](../tutorials/recipes.md).
 
 ## ✅ Compatibility
 
@@ -58,11 +58,10 @@ More examples and framework-specific guides live in [`docs/tutorials/recipes.md`
 
 ## 📚 Documentation
 
-- [Official Documentation Site](https://docs.nura.dev)
-- [Getting Started](./docs/guide/getting-started.md)
-- [Architecture Overview](./docs/internals/architecture.md)
-- [Recipes & Examples](./docs/tutorials/recipes.md)
-- [Architecture Decision Records](./docs/adr)
+- [Getting Started](./getting-started.md)
+- [Architecture Overview](../internals/architecture.md)
+- [Recipes & Examples](../tutorials/recipes.md)
+- [Architecture Decision Records](../adr)
 
 Generated API documentation (via TypeDoc) will be published under `docs/api/` during releases.
 
@@ -75,19 +74,19 @@ pnpm run build:docs
 ## 🧭 Roadmap & Project Status
 
 - Project maturity: **Alpha** – APIs may change, feedback welcome.
-- See [`docs/community/roadmap.md`](./docs/community/roadmap.md) for quarterly goals including i18n, fuzzy matching, devtools, and framework adapters.
+- See [`docs/community/roadmap.md`](../community/roadmap.md) for quarterly goals including i18n, fuzzy matching, devtools, and framework adapters.
 
 ## 🧑‍💻 Contributing
 
-We welcome contributions! Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for branch strategy, Conventional Commits, and local development instructions. Issues and feature ideas should start with a Discussion or issue using our templates.
+We welcome contributions! Please read [CONTRIBUTING.md](../community/contributing.md) for branch strategy, Conventional Commits, and local development instructions. Issues and feature ideas should start with a Discussion or issue using our templates.
 
 ## 🔐 Security
 
-Report vulnerabilities privately to [security@nura.dev](mailto:security@nura.dev). See [SECURITY.md](./SECURITY.md) for supported versions and disclosure timelines.
+Report vulnerabilities privately to [security@nura.dev](mailto:security@nura.dev). See [SECURITY.md](../community/security.md) for supported versions and disclosure timelines.
 
 ## 🤝 Support
 
-If you have questions, open a Discussion or issue. See [SUPPORT.md](./SUPPORT.md) for details.
+If you have questions, open a Discussion or issue. See [SUPPORT.md](../../SUPPORT.md) for details.
 
 ## 📄 License
 
