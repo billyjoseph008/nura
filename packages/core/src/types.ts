@@ -46,7 +46,14 @@ export type ModernNAction = {
   type: NActionType
   target?: string
   payload?: Record<string, unknown>
-  meta?: { priority?: 'soft' | 'normal' | 'hard'; desc?: string }
+  meta?: {
+    priority?: 'soft' | 'normal' | 'hard'
+    desc?: string
+    confidence?: number
+    via?: 'exact' | 'phonetic' | 'global'
+    wakeVia?: string
+    confidenceThreshold?: number
+  }
 }
 
 export interface LegacyNuraAction {
@@ -75,6 +82,15 @@ export interface NActionSpec {
   >
   entities?: NEntityDef[]
   validate?: (payload: Record<string, unknown> | undefined) => boolean
+  aliases?: {
+    wake?: string[]
+    commands?: Array<{ locale: 'es' | 'en'; variants: string[] }>
+    entities?: Record<string, string[]>
+  }
+  meta?: {
+    confidenceThreshold?: number
+    desc?: string
+  }
 }
 
 export interface NAgent {

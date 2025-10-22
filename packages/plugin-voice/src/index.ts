@@ -1,8 +1,24 @@
-import type { NAgent, NContext, NAction, NActionSpec, NEntityDef } from '@nura/core'
-import { parseBoolean, parseNumber, parseDate, parseRangeNumber } from '@nura/core/entities'
-import type { NI18n, NLocale } from '@nura/core/i18n'
+import type { NAgent, NContext, NActionSpec, NEntityDef, NLocale } from '@nura/core'
+import {
+  parseBoolean,
+  parseDate,
+  parseEnum,
+  parseNumber,
+  parseRangeNumber,
+} from '@nura/core/entities'
+import type { NI18n } from '@nura/core/i18n'
 import type { NLexicon } from '@nura/core/lexicon'
-import { similarity } from './fuzzy'
+import {
+  collectCommandVariants,
+  collectEntityVariants,
+  collectWakeVariants,
+} from '@nura/core/registry'
+import { toNumberLoose } from '@nura/core/nlp/numerals'
+
+import { matchUtterance } from './matchUtterance'
+import { normalizeUtterance } from './text'
+import { detectWake, normalizeWakeWords, stripWake } from './wake'
+import type { NIntent, NVoiceOptions, WakeWordInput } from './types'
 
 // ---- Tipos auxiliares ----
 type SpeechRecognitionResultAlternative = { transcript?: string }
@@ -25,30 +41,6 @@ type NuraSpeechRecognition = {
 
 type SpeechRecognitionConstructor = new () => NuraSpeechRecognition
 
-// ---- Tipos ----
-export type NIntent = {
-  name: string
-  // patrón de coincidencia: RegExp o función (texto -> NAction | null)
-  match: RegExp | ((utterance: string) => NAction | null)
-  // si match es RegExp, toAction convierte el resultado al NAction
-  toAction?: (m: RegExpMatchArray) => NAction | null
-  locale?: string // ej: 'es-CR'
-  /** frase original usada para derivar el intent */
-  phrase?: string
-  /** frase normalizada usada para ranking */
-  normalizedPhrase?: string
-  /** entidades asociadas al intent (si provienen de un spec) */
-  entities?: NActionSpec['entities']
-}
-
-export type NVoiceOptions = {
-  wakeWords?: string[] // ej: ['ok nura','hey nura']
-  intents?: NIntent[] // intents declarativos
-  language?: string // Web Speech API lang, ej 'es-CR'
-  keyWake?: string // fallback teclado (ej: 'F2')
-  autoStart?: boolean // arranca de una vez
-}
-
 function escapeRegex(s: string) {
   return s.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&')
 }
@@ -68,7 +60,7 @@ function slotPattern(ent: NEntityDef): RegExp {
   if (ent.pattern) return ent.pattern
   switch (ent.type) {
     case 'number':
-      return /(\d+(?:[.,]\d+)?)/
+      return /(\d+(?:[.,]\d+)?|[a-zA-Záéíóúñ]+)/
     case 'boolean':
       return /([a-zA-Záéíóúñ]+)/
     case 'enum':
@@ -83,29 +75,37 @@ function slotPattern(ent: NEntityDef): RegExp {
   }
 }
 
+function baseLocale(locale: NLocale): 'es' | 'en' {
+  return locale.startsWith('en') ? 'en' : 'es'
+}
+
 function parseByType(
   raw: string,
   ent: NEntityDef,
   ctx: { locale: NLocale; i18n: NI18n; lexicon: NLexicon },
+  synonyms: string[] = [],
 ): unknown {
   if (ent.parse) return ent.parse(raw, ctx)
+  const localeBase = baseLocale(ctx.locale)
   switch (ent.type) {
     case 'string':
       return raw.trim()
-    case 'number':
-      return parseNumber(raw)
+    case 'number': {
+      const parsed = parseNumber(raw)
+      if (parsed != null) return parsed
+      return toNumberLoose(raw, localeBase)
+    }
     case 'enum': {
-      const v = raw.trim().toLowerCase()
-      if (!ent.options || ent.options.length === 0) return v
-      const ok = ent.options.map((option: string) => option.toLowerCase())
-      return ok.includes(v) ? v : undefined
+      const variants = [...new Set([...(ent.options ?? []), ...synonyms])]
+      if (variants.length === 0) return raw.trim().toLowerCase()
+      return parseEnum(raw, variants, { locale: ctx.locale })
     }
     case 'boolean':
-      return parseBoolean(raw, ctx)
+      return parseBoolean(raw, { locale: ctx.locale })
     case 'date':
-      return parseDate(raw, ctx)
+      return parseDate(raw, { locale: ctx.locale })
     case 'range_number':
-      return parseRangeNumber(raw)
+      return parseRangeNumber(raw, { locale: ctx.locale })
     default:
       return raw
   }
@@ -113,83 +113,6 @@ function parseByType(
 
 function getActiveLocale(ctx: NContext, explicit?: NLocale): NLocale {
   return explicit ?? ctx.registry.i18n.getLocale()
-}
-
-function stripDiacritics(input: string): string {
-  return input.normalize('NFD').replace(/\p{Diacritic}/gu, '')
-}
-
-function normalizeUtterance(
-  ctx: NContext,
-  text: string,
-  localeOverride?: NLocale,
-): string {
-  const locale = localeOverride ?? ctx.registry.i18n.getLocale()
-  const tokens = text
-    .trim()
-    .split(/\s+/g)
-    .filter((part) => part.length > 0)
-  if (tokens.length === 0) return ''
-  return tokens
-    .map((tok) => {
-      const canonical = ctx.registry.lexicon.normalize(locale, tok) ?? tok
-      return stripDiacritics(canonical.toLowerCase())
-    })
-    .join(' ')
-}
-
-function tokensForWeight(text: string): string[] {
-  return text
-    .trim()
-    .split(/\s+/)
-    .filter((part) => part.length > 0)
-}
-
-function patternForIntent(intent: NIntent): string {
-  if (intent.normalizedPhrase) return intent.normalizedPhrase
-  if (typeof intent.match === 'function') return intent.phrase ?? ''
-  return intent.match.source.replace(/[\\^$]/g, '').toLowerCase()
-}
-
-function ensureGlobal(pattern: RegExp): RegExp {
-  const baseFlags = pattern.flags.includes('g') ? pattern.flags : pattern.flags + 'g'
-  return new RegExp(pattern.source, baseFlags)
-}
-
-function buildSyntheticMatch(
-  normalized: string,
-  original: string,
-  intent: NIntent,
-): RegExpMatchArray | null {
-  if (!intent.entities || intent.entities.length === 0) return null
-  const collected: string[] = []
-  let cursorNormalized = 0
-  let cursorOriginal = 0
-
-  for (const entity of intent.entities) {
-    const basePattern = slotPattern(entity)
-    const normalizedPattern = ensureGlobal(basePattern)
-    normalizedPattern.lastIndex = cursorNormalized
-    let match = normalizedPattern.exec(normalized)
-    if (match) {
-      cursorNormalized = normalizedPattern.lastIndex
-      collected.push(match[1] ?? match[0] ?? '')
-      continue
-    }
-
-    const originalPattern = ensureGlobal(basePattern)
-    originalPattern.lastIndex = cursorOriginal
-    match = originalPattern.exec(original)
-    if (!match) return null
-    cursorOriginal = originalPattern.lastIndex
-    collected.push(match[1] ?? match[0] ?? '')
-  }
-
-  const synthetic = [normalized, ...collected] as unknown as RegExpMatchArray
-  ;(synthetic as any).index = 0
-  ;(synthetic as any).input = original
-  ;(synthetic as any).groups = undefined
-  return synthetic
 }
 
 /** Detección simple de idioma por heurística */
@@ -212,137 +135,6 @@ export function detectLocale(text: string, candidates: NLocale[]): NLocale {
 
   const best = Object.entries(score).sort((a, b) => b[1] - a[1])[0]
   return best && best[1] > 0 ? (best[0] as NLocale) : uniqueCandidates[0]
-}
-
-/** Matching inteligente con fuzzy + ranking */
-export function matchUtterance(
-  ctx: NContext,
-  text: string,
-  intents: NIntent[],
-  opts?: { fuzzy?: boolean; threshold?: number },
-): NAction | undefined {
-  const original = text.trim()
-  if (!original) return undefined
-  const { fuzzy = true, threshold = 0.82 } = opts ?? {}
-  const locale = ctx.registry.i18n.getLocale()
-  const normalized = normalizeUtterance(ctx, original, locale)
-  const normText = normalized.toLowerCase()
-
-  const baseTokens = tokensForWeight(original.toLowerCase())
-  const synonymsWeight = baseTokens.reduce((acc, token) => {
-    const canon = ctx.registry.lexicon.normalize(locale, token)
-    return acc + (canon && canon !== token ? 0.05 : 0)
-  }, 0)
-
-  const scored: Array<{
-    intent: NIntent
-    score: number
-    match?: RegExpMatchArray
-    via: 'exact' | 'fuzzy'
-  }> = []
-
-  for (const intent of intents) {
-    if (typeof intent.match === 'function') {
-      const actionNormalized = intent.match(normalized)
-      if (actionNormalized) {
-        ctx.registry.telemetry.emit('voice.intent.candidates', {
-          textOriginal: text,
-          normText: normalized,
-          locale,
-          candidates: [
-            {
-              name: intent.name,
-              score: 1,
-            },
-          ],
-        })
-        return actionNormalized
-      }
-      if (normalized !== original) {
-        const fallback = intent.match(original)
-        if (fallback) {
-          ctx.registry.telemetry.emit('voice.intent.candidates', {
-            textOriginal: text,
-            normText: normalized,
-            locale,
-            candidates: [
-              {
-                name: intent.name,
-                score: 1,
-              },
-            ],
-          })
-          return fallback
-        }
-      }
-      continue
-    }
-
-    const rx = intent.match
-    const normalizedMatch = normalized.match(rx)
-    if (normalizedMatch) {
-      scored.push({ intent, score: 1, match: normalizedMatch, via: 'exact' })
-      continue
-    }
-
-    if (normalized !== original) {
-      const originalMatch = original.match(rx)
-      if (originalMatch) {
-        scored.push({ intent, score: 1, match: originalMatch, via: 'exact' })
-        continue
-      }
-    }
-
-    if (!fuzzy) continue
-
-    const patternText = patternForIntent(intent)
-    if (!patternText) continue
-    const sim = similarity(normText, patternText)
-    if (sim >= threshold * 0.8) {
-      const score = Math.min(1, sim + synonymsWeight)
-      scored.push({ intent, score, via: 'fuzzy' })
-    }
-  }
-
-  scored.sort((a, b) => b.score - a.score)
-  ctx.registry.telemetry.emit('voice.intent.candidates', {
-    textOriginal: text,
-    normText: normalized,
-    locale,
-    candidates: scored.map((s) => ({
-      name: s.intent.name,
-      score: s.score,
-    })),
-  })
-
-  const best = scored[0]
-  if (!best) return undefined
-
-  let finalAction: NAction | null | undefined
-  if (best.match && best.intent.toAction) {
-    finalAction = best.intent.toAction(best.match)
-  } else if (best.intent.toAction && typeof best.intent.match !== 'function') {
-    const retryNormalized = normalized.match(best.intent.match)
-    if (retryNormalized) {
-      finalAction = best.intent.toAction(retryNormalized)
-    } else {
-      const retryOriginal = original.match(best.intent.match)
-      if (retryOriginal) {
-        finalAction = best.intent.toAction(retryOriginal)
-      } else {
-        const synthetic = buildSyntheticMatch(normalized, original, best.intent)
-        if (synthetic) {
-          finalAction = best.intent.toAction(synthetic)
-        }
-      }
-    }
-  }
-
-  if (finalAction && best.score >= threshold) {
-    return finalAction
-  }
-
-  return undefined
 }
 
 function phraseToRegExp(phrase: string, entities?: NEntityDef[]) {
@@ -377,32 +169,51 @@ export function deriveIntentsFromSpecs(
   locale: NLocale,
 ): NIntent[] {
   const intents: NIntent[] = []
+  const lexicon = ctx.registry.lexicon
+  const localeBase = baseLocale(locale)
   for (const spec of specs) {
-    const pack =
-      spec.phrases[locale] ??
-      (spec.locale ? spec.phrases[spec.locale] : undefined) ??
-      Object.values(spec.phrases)[0]
-    if (!pack) continue
+    const phrases = collectCommandVariants(spec, locale)
+    if (phrases.length === 0) continue
 
-    const phrases = [...(pack.canonical ?? []), ...(pack.synonyms ?? [])]
+    const entitySynonyms: Record<string, string[]> = {}
+    if (spec.entities) {
+      for (const ent of spec.entities) {
+        const variants = collectEntityVariants(spec, ent.name, ent.options ?? [])
+        entitySynonyms[ent.name] = variants
+        for (const alias of variants) {
+          if (ent.options && ent.options.length > 0) {
+            lexicon.registerPhonetic(localeBase, alias, ent.options[0]!)
+          }
+        }
+      }
+    }
+
+    const wakeAliases = collectWakeVariants(spec)
+    for (const alias of wakeAliases) {
+      lexicon.registerPhonetic(localeBase, alias, alias)
+    }
+
     for (const phrase of phrases) {
       const normalized = normalizeUtterance(ctx, phrase, locale)
       const normalizedForSimilarity = normalized
         .replace(/\{[^}]+\}/g, ' ')
         .replace(/\s+/g, ' ')
         .trim()
-      const rx = phraseToRegExp(normalized, spec.entities)
+      const rx = phraseToRegExp(phrase, spec.entities)
+      const tokens = normalizedForSimilarity ? normalizedForSimilarity.split(/\s+/) : normalized.split(/\s+/)
       intents.push({
         name: `${spec.name}:${phrase}`,
         match: rx,
         phrase,
         normalizedPhrase: normalizedForSimilarity || normalized,
         entities: spec.entities,
+        entitySynonyms,
+        confidenceThreshold: spec.meta?.confidenceThreshold,
+        tokens,
         toAction: (m) => {
           const payload: Record<string, unknown> = {}
-          const locale = ctx.registry.i18n.getLocale()
           const parseCtx = {
-            locale,
+            locale: ctx.registry.i18n.getLocale(),
             i18n: ctx.registry.i18n,
             lexicon: ctx.registry.lexicon,
           }
@@ -411,8 +222,9 @@ export function deriveIntentsFromSpecs(
             for (const ent of spec.entities) {
               const raw = m[groupIdx++]
               if (raw === undefined) continue
-              const value = parseByType(String(raw), ent, parseCtx)
-              payload[ent.name] = value
+              const synonyms = entitySynonyms[ent.name] ?? []
+              const value = parseByType(String(raw), ent, parseCtx, synonyms)
+              if (value !== undefined) payload[ent.name] = value
             }
           }
 
@@ -427,7 +239,10 @@ export function deriveIntentsFromSpecs(
             type: spec.type,
             target: spec.target,
             payload: finalPayload,
-            meta: { desc: phrase },
+            meta: {
+              desc: phrase,
+              confidenceThreshold: spec.meta?.confidenceThreshold,
+            },
           }
         },
       })
@@ -444,9 +259,18 @@ function getSpecsFromCtx(ctx: NContext): NActionSpec[] {
   }
 }
 
+function gatherWakeInputs(base: WakeWordInput[] | undefined, specs: NActionSpec[]): WakeWordInput[] {
+  const inputs: WakeWordInput[] = [...(base ?? [])]
+  for (const spec of specs) {
+    for (const alias of collectWakeVariants(spec)) {
+      inputs.push(alias)
+    }
+  }
+  return inputs
+}
+
 // ---- Agente de voz ----
 export function voiceAgent(opts: NVoiceOptions = {}): NAgent {
-  const wake = new Set((opts.wakeWords ?? []).map((w) => w.toLowerCase()))
   const explicitLocale = opts.language as NLocale | undefined
   const key = opts.keyWake ?? 'F2'
 
@@ -474,29 +298,25 @@ export function voiceAgent(opts: NVoiceOptions = {}): NAgent {
     return rec
   }
 
-  function hasWakeWord(u: string) {
-    if (wake.size === 0) return true
-    const norm = u.toLowerCase()
-    for (const w of wake) if (norm.includes(w)) return true
-    return false
-  }
-
-  function stripWake(u: string) {
-    if (wake.size === 0) return u
-    let out = u
-    for (const w of wake) {
-      const r = new RegExp(escapeRegex(w), 'ig')
-      out = out.replace(r, '').trim()
-    }
-    return out
-  }
-
   function handleTranscript(text: string, ctx: NContext) {
     const tel = ctx.registry.telemetry
     tel.emit('voice.input', { textOriginal: text })
 
-    if (!hasWakeWord(text)) return
-    const content = stripWake(text)
+    const specs = getSpecsFromCtx(ctx)
+    const wakeInputs = gatherWakeInputs(opts.wakeWords, specs)
+    const wakeEntries = normalizeWakeWords(wakeInputs)
+
+    const wakeLocale = baseLocale(ctx.registry.i18n.getLocale())
+    const wakeDetection = detectWake(text, wakeEntries, wakeLocale)
+    tel.emit('voice.wake.fuzzy', {
+      input: text,
+      matchedAlias: wakeDetection.result?.value ?? null,
+      confidence: wakeDetection.result?.score ?? 0,
+      via: wakeDetection.result ? wakeDetection.result.strategy : 'none',
+    })
+    if (!wakeDetection.matched) return
+
+    const content = stripWake(text, wakeDetection.result)
     if (!content.trim()) return
 
     const activeLocale = getActiveLocale(ctx, explicitLocale)
@@ -512,19 +332,29 @@ export function voiceAgent(opts: NVoiceOptions = {}): NAgent {
     tel.emit('voice.locale.detected', { detected, candidates: langCandidates })
     ctx.registry.i18n.setLocale(detected)
 
-    const specs = getSpecsFromCtx(ctx)
     const derived = deriveIntentsFromSpecs(specs, ctx, detected)
     tel.emit('voice.intents.derived', { count: derived.length, locale: detected })
     const intents = [...(opts.intents ?? []), ...derived]
 
-    const action = matchUtterance(ctx, content, intents, { fuzzy: true, threshold: 0.82 })
+    const action = matchUtterance(ctx, content, intents, {
+      fuzzy: true,
+      threshold: 0.82,
+      wakeConfidence: wakeDetection.result?.score ?? 1,
+      wakeVia: wakeDetection.result?.matchedTokens?.[0]?.via ?? 'none',
+      devMode: opts.devMode ?? false,
+    })
+
     if (action) {
       tel.emit('voice.intent.selected', {
         action,
         locale: detected,
         textOriginal: content,
+        confidence: (action as any).meta?.confidence ?? 0,
+        via: (action as any).meta?.via ?? 'unknown',
       })
-      void ctx.act(action)
+      if (!opts.devMode) {
+        void ctx.act(action)
+      }
     } else {
       tel.emit('voice.intent.rejected', {
         textOriginal: content,
@@ -559,8 +389,6 @@ export function voiceAgent(opts: NVoiceOptions = {}): NAgent {
           // ignorar errores de arranque
         }
       }
-
-      // botón global de escucha (opcional): puedes añadirlo desde devtools
     },
     stop() {
       try {
@@ -569,6 +397,9 @@ export function voiceAgent(opts: NVoiceOptions = {}): NAgent {
         // ignorar errores al detener
       }
       rec = null
-    }
+    },
   }
 }
+
+export { matchUtterance } from './matchUtterance'
+export type { NIntent, NVoiceOptions } from './types'

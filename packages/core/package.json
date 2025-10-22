@@ -41,6 +41,10 @@
       "types": "./dist/registry.d.ts",
       "import": "./dist/registry.js"
     },
+    "./nlp/numerals": {
+      "types": "./dist/nlp/numerals.d.ts",
+      "import": "./dist/nlp/numerals.js"
+    },
     "./actions": {
       "types": "./dist/actions.d.ts",
       "import": "./dist/actions.js"
@@ -55,6 +59,7 @@
       "entities": ["dist/entities.d.ts"],
       "seeds/lexicon": ["dist/seeds/lexicon.d.ts"],
       "registry": ["dist/registry.d.ts"],
+      "nlp/numerals": ["dist/nlp/numerals.d.ts"],
       "actions": ["dist/actions.d.ts"]
     }
   },
@@ -66,8 +71,8 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsup src/index.ts src/i18n.ts src/lexicon.ts src/entities.ts src/seeds/lexicon.ts src/registry.ts src/actions.ts --dts --format esm --clean",
-    "dev": "tsup src/index.ts src/i18n.ts src/lexicon.ts src/entities.ts src/seeds/lexicon.ts src/registry.ts src/actions.ts --dts --format esm --watch",
+    "build": "tsup src/index.ts src/i18n.ts src/lexicon.ts src/entities.ts src/seeds/lexicon.ts src/registry.ts src/actions.ts src/nlp/numerals.ts --dts --format esm --clean",
+    "dev": "tsup src/index.ts src/i18n.ts src/lexicon.ts src/entities.ts src/seeds/lexicon.ts src/registry.ts src/actions.ts src/nlp/numerals.ts --dts --format esm --watch",
     "lint": "eslint . --ext .ts,.tsx,.vue --max-warnings=0",
     "test": "echo \"(todo)\""
   },
@@ -80,5 +85,8 @@
   "devDependencies": {
     "tsup": "^8.0.1",
     "typescript": "^5.4.0"
+  },
+  "dependencies": {
+    "@nura/plugin-fuzzy": "workspace:*"
   }
 }

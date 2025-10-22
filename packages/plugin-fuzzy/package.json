@@ -1,15 +1,15 @@
 {
-  "name": "@nura/plugin-voice",
+  "name": "@nura/plugin-fuzzy",
   "version": "0.1.0",
-  "description": "Voice plugin for Nura.js command registry",
+  "description": "Lightweight fuzzy matching utilities for Nura.js",
   "type": "module",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/nura-dev/nura.git",
-    "directory": "packages/plugin-voice"
+    "directory": "packages/plugin-fuzzy"
   },
-  "homepage": "https://github.com/nura-dev/nura/tree/main/packages/plugin-voice",
+  "homepage": "https://github.com/nura-dev/nura/tree/main/packages/plugin-fuzzy",
   "bugs": {
     "url": "https://github.com/nura-dev/nura/issues"
   },
@@ -26,16 +26,8 @@
   "scripts": {
     "build": "tsup src/index.ts --dts --format esm --clean",
     "dev": "tsup src/index.ts --dts --format esm --watch",
-    "lint": "eslint . --ext .ts,.tsx,.vue --max-warnings=0",
+    "lint": "eslint . --ext .ts --max-warnings=0",
     "test": "pnpm build && node --test \"test/**/*.mjs\""
-  },
-  "keywords": ["nura", "voice", "commands"],
-  "dependencies": {
-    "@nura/core": "workspace:*",
-    "@nura/plugin-fuzzy": "workspace:*"
-  },
-  "peerDependencies": {
-    "@nura/core": ">=0.1.0"
   },
   "devDependencies": {
     "tsup": "^8.0.1",
