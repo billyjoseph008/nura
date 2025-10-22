@@ -72,6 +72,14 @@ Generate local API docs with:
 pnpm run build:docs
 ```
 
+## Linter & Format
+
+- Lint: `pnpm run lint`
+- Fix: `pnpm run lint:fix`
+- Format: `pnpm run format`
+
+> Si aparece “ESLint couldn't find the plugin eslint-plugin-import”, asegúrate de que los plugins estén instalados **en el root** con `pnpm add -w -D eslint-plugin-import eslint-import-resolver-typescript`.
+
 ## 🧭 Roadmap & Project Status
 
 - Project maturity: **Alpha** – APIs may change, feedback welcome.

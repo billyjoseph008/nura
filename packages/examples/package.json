@@ -16,7 +16,9 @@
   },
   "scripts": {
     "build": "echo \"examples build\"",
-    "lint": "eslint . --ext .ts,.tsx,.vue --max-warnings=0"
+    "lint": "eslint . --ext .ts,.tsx,.mts,.cts",
+    "lint:fix": "eslint . --ext .ts,.tsx,.mts,.cts --fix",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@nura/core": "workspace:*",

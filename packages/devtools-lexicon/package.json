@@ -23,5 +23,10 @@
     "@nura/core": ">=0.1.0",
     "@nura/plugin-voice": ">=0.1.0",
     "vue": ">=3.3.0"
+  },
+  "scripts": {
+    "lint": "eslint . --ext .ts,.tsx,.mts,.cts,.vue",
+    "lint:fix": "eslint . --ext .ts,.tsx,.mts,.cts,.vue --fix",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   }
 }
