@@ -37,7 +37,6 @@ Thumbs.db
 .vercel/
 .cache/
 .docs/
-docs/api/
 
 # Misc
 *.pem

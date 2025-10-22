@@ -1,4 +1,12 @@
-import type { NAgent, NContext, NActionSpec, NEntityDef, NLocale } from '@nura/core'
+import type {
+  NAgent,
+  NContext,
+  NActionSpec,
+  NEntityDef,
+  NLocale,
+  NAction,
+  ModernNAction,
+} from '@nura/core'
 import {
   parseBoolean,
   parseDate,
@@ -20,7 +28,7 @@ import { normalizeUtterance } from './text'
 import { detectWake, normalizeWakeWords, stripWake } from './wake'
 import type { NIntent, NVoiceOptions, WakeWordInput } from './types'
 
-// ---- Tipos auxiliares ----
+// ---- Internal helpers ----
 type SpeechRecognitionResultAlternative = { transcript?: string }
 type SpeechRecognitionResult = ArrayLike<SpeechRecognitionResultAlternative>
 type NuraSpeechRecognitionEvent = {
@@ -115,7 +123,25 @@ function getActiveLocale(ctx: NContext, explicit?: NLocale): NLocale {
   return explicit ?? ctx.registry.i18n.getLocale()
 }
 
-/** Detección simple de idioma por heurística */
+function isModernAction(action: NAction): action is ModernNAction {
+  return 'type' in action
+}
+
+function getActionMeta(action: NAction): {
+  confidence?: number
+  via?: string
+} {
+  if (isModernAction(action) && action.meta && typeof action.meta === 'object') {
+    const confidence =
+      typeof action.meta.confidence === 'number' ? action.meta.confidence : undefined
+    const via = typeof action.meta.via === 'string' ? action.meta.via : undefined
+    return { confidence, via }
+  }
+
+  return {}
+}
+
+/** Simple locale detection using heuristic token scoring. */
 export function detectLocale(text: string, candidates: NLocale[]): NLocale {
   const lower = text.toLowerCase()
 
@@ -270,18 +296,19 @@ function gatherWakeInputs(base: WakeWordInput[] | undefined, specs: NActionSpec[
   return inputs
 }
 
-// ---- Agente de voz ----
+// ---- Voice agent implementation ----
 export function voiceAgent(opts: NVoiceOptions = {}): NAgent {
   const explicitLocale = opts.language as NLocale | undefined
   const key = opts.keyWake ?? 'F2'
 
-  // Web Speech API (si disponible)
+  // Web Speech API (when available)
   function createRecognizer(ctx: NContext) {
-    const anyWin = getWindow()
-    if (!anyWin) return null
-    const SR = anyWin.SpeechRecognition || anyWin.webkitSpeechRecognition
-    if (!SR) return null
-    const rec = new SR()
+    const speechWindow = getWindow()
+    if (!speechWindow) return null
+    const SpeechRecognitionCtor =
+      speechWindow.SpeechRecognition || speechWindow.webkitSpeechRecognition
+    if (!SpeechRecognitionCtor) return null
+    const rec = new SpeechRecognitionCtor()
     rec.lang = getActiveLocale(ctx, explicitLocale)
     rec.continuous = false
     rec.interimResults = false
@@ -291,10 +318,10 @@ export function voiceAgent(opts: NVoiceOptions = {}): NAgent {
       handleTranscript(t, ctx)
     }
     rec.onerror = () => {
-      /* opcional: log/reintentos */
+      /* optional: add logging or retries here */
     }
     rec.onend = () => {
-      /* esperar nueva activación */
+      /* wait for next activation */
     }
     return rec
   }
@@ -346,12 +373,13 @@ export function voiceAgent(opts: NVoiceOptions = {}): NAgent {
     })
 
     if (action) {
+      const meta = getActionMeta(action)
       tel.emit('voice.intent.selected', {
         action,
         locale: detected,
         textOriginal: content,
-        confidence: (action as any).meta?.confidence ?? 0,
-        via: (action as any).meta?.via ?? 'unknown',
+        confidence: meta.confidence ?? 0,
+        via: meta.via ?? 'unknown',
       })
       if (!opts.devMode) {
         void ctx.act(action)
@@ -378,7 +406,7 @@ export function voiceAgent(opts: NVoiceOptions = {}): NAgent {
 
       win.addEventListener('keydown', (e: KeyboardEvent) => {
         if (e.key === key) {
-          const promptResult = win.prompt?.('[Nura voice] Di algo… (dev mock)') ?? ''
+          const promptResult = win.prompt?.('[Nura voice] Say something… (dev mock)') ?? ''
           if (promptResult) handleTranscript(promptResult, ctx)
         }
       })
@@ -387,7 +415,7 @@ export function voiceAgent(opts: NVoiceOptions = {}): NAgent {
         try {
           rec.start()
         } catch {
-          // ignorar errores de arranque
+          // ignore startup errors
         }
       }
     },
@@ -395,7 +423,7 @@ export function voiceAgent(opts: NVoiceOptions = {}): NAgent {
       try {
         rec?.stop()
       } catch {
-        // ignorar errores al detener
+        // ignore stop errors
       }
       rec = null
     },

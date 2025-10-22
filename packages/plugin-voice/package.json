@@ -24,9 +24,9 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build": "tsup src/index.ts --dts --format esm --clean",
-    "dev": "tsup src/index.ts --dts --format esm --watch",
-    "lint": "eslint . --ext .ts,.tsx,.vue --max-warnings=0",
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "lint": "eslint . --ext .ts",
     "test": "pnpm build && node --test \"test/**/*.mjs\""
   },
   "keywords": ["nura", "voice", "commands"],
@@ -38,7 +38,10 @@
     "@nura/core": ">=0.1.0"
   },
   "devDependencies": {
-    "tsup": "^8.0.1",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "rollup": "^4.24.0",
+    "rollup-plugin-dts": "^6.1.0",
     "typescript": "^5.4.0"
   }
 }

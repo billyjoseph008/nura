@@ -1,70 +1,75 @@
 # @nura/vue
 
-Adaptador oficial de Vue 3 para Nura.js. Expone un instalador minimalista y directivas reactivas para marcar el árbol del DOM con metadatos de Nura.
+> Official Vue 3 adapter for rendering Nura.js metadata and wiring runtime actions.
 
-## Instalación
+## Installation
 
 ```bash
 pnpm add @nura/vue @nura/core vue
+# or
+yarn add @nura/vue @nura/core vue
 ```
 
-## Uso rápido
+## Quick Start
 
 ```ts
 import { createApp } from 'vue'
 import App from './App.vue'
-import { Nura, createRegistry } from '@nura/core'
+import { createRegistry, Nura } from '@nura/core'
 import { withVue } from '@nura/vue'
 
-const registry = createRegistry({ config: { app: { id: 'demo-nura' } } })
-const nura = new Nura({ registry })
+const registry = createRegistry({
+  config: { app: { id: 'demo-nura' } },
+})
 
+const nura = new Nura({ registry })
 const app = createApp(App)
+
 withVue(nura).install(app)
 nura.start()
 
 app.mount('#app')
 ```
 
-### `v-nu-listen`
+## API Surface
 
-Marca nodos que deben indexarse como oyentes dentro de Nura.
+### `withVue(nura)`
 
-```vue
-<section v-nu-listen.soft.scope="'ui'">
-  ...
-</section>
-```
+Returns an installer with:
 
-- Añade `data-nu-listen="dom"`.
-- `v-nu-listen.soft` fuerza `data-nu-priority="soft"`.
-- `v-nu-listen.deep` fuerza `data-nu-priority="hard"`.
-- `v-nu-listen:scope="'ui'"` añade `data-nu-scope="ui"`.
+- `install(app)` – provides the `Nura` instance to the Vue app and registers
+  directives/components.
+- `directive` – access to the raw `v-nu-act` directive for manual registration.
+- `plugin` – Vue plugin reference usable with `app.use(...)`.
 
-### `v-nu-act`
+### Directives
 
-Conecta elementos interactivos con acciones de Nura. Serializa la acción en `data-nu-act`, rellena `data-nu-desc` cuando la acción expone `meta.desc` (o `description` en acciones legadas) y dispara `nura.act(...)` en el click.
+- `v-nu-act="action"` – serialises an `NAction` into `data-nu-act`, attaches
+  accessible descriptions, and triggers `nura.act(...)` on interaction.
+- `v-nu-listen` – marks DOM sections to be indexed by the registry.
+  - Modifiers: `.soft`, `.deep` map to priority hints.
+  - Argument: `v-nu-listen:scope="'ui'"` sets the scope metadata.
 
-```vue
-<button
-  v-nu-act="{ type: 'open', target: 'menu:orders', meta: { desc: 'Abrir menú de órdenes' } }"
-  aria-label="Abrir menú de órdenes"
->
-  Órdenes
-</button>
-```
+### Composables
 
-En desarrollo, si `data-nu-act` está presente pero el elemento no tiene `aria-label`, `aria-labelledby` o `data-nu-desc`, se emite un `console.warn` para ayudar con la accesibilidad.
+- `useNura()` – injects the active `Nura` instance.
+- `useNuraAction(action)` – builds a reactive action executor.
+- `useNuraElement(options)` – registers components within the semantic graph.
+- `useNuraEvents(event, handler)` – subscribe to registry events.
+- `useNuraPermission(verb, scope)` – computes permission state for UI hints.
 
-## Demo
+## Configuration
 
-Incluimos un ejemplo con Vite en `apps/vue-demo` que muestra un botón con `v-nu-act` y un contenedor con `v-nu-listen`. Ejecuta:
+The package ships strict TypeScript definitions, Vue-specific directive typings,
+and Rollup-based ESM builds with source maps. See `tsconfig.build.json` for
+compiler flags.
 
-```bash
-pnpm --filter nura-vue-demo install
-pnpm --filter nura-vue-demo run dev
-```
+## Dependencies
 
-## Licencia
+- Internal: `@nura/core`.
+- Peer: Vue 3 (`>=3.3.0`).
 
-MIT
+## Status
+
+**Experimental.** The adapter stabilises alongside the core runtime. Monitor the
+root [`CHANGELOG.md`](../../CHANGELOG.md) for updates.

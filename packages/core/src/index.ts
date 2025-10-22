@@ -7,6 +7,11 @@ import type {
 } from './types'
 import { decidePolicy, hasRole, pickRule } from './permissions'
 
+/**
+ * Public façade for executing actions registered in a {@link NRegistry}.
+ * The instance coordinates permission checks, optional confirmation prompts,
+ * and telemetry emission when actions run.
+ */
 export class Nura {
   #registry: NRegistry
   #started = false
@@ -15,6 +20,9 @@ export class Nura {
     this.#registry = opts.registry
   }
 
+  /**
+   * Initializes the runtime once per instance and emits a global `nura:started` event.
+   */
   start(): void {
     if (this.#started) return
 
@@ -22,6 +30,10 @@ export class Nura {
     document.dispatchEvent(new CustomEvent('nura:started'))
   }
 
+  /**
+   * Executes an action through the registry dispatcher, respecting configured
+   * permissions and confirmation policies.
+   */
   async act(action: NAction): Promise<NResult> {
     const { config, permissions, actions } = this.#registry
     const actor: NActor | undefined = config.actor?.()
@@ -102,7 +114,13 @@ export type {
   NBundle,
 } from './i18n'
 export type { NLexicon, NCanonical, NSense } from './lexicon'
-export type { NTelemetry, NTelemetryEvent, NTelemetryHandler } from './telemetry'
+export type {
+  NTelemetry,
+  NTelemetryEvent,
+  NTelemetryHandler,
+  NTelemetryPayload,
+  NTelemetryWildcardHandler,
+} from './telemetry'
 export { seedLexicon } from './seeds/lexicon'
 
 function resolveScope(action: NAction, config: NRegistry['config']): string | undefined {
@@ -124,7 +142,7 @@ function defaultConfirm(_: {
   rule?: NPermissionRule
 }): boolean {
   if (typeof window !== 'undefined' && typeof window.confirm === 'function') {
-    return window.confirm('¿Confirmar acción?')
+    return window.confirm('Confirm action?')
   }
   return true
 }

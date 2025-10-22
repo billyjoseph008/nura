@@ -27,7 +27,7 @@ export type CreateRegistryOptions = {
   permissions?: Partial<NPermissions>
   actionCatalog?: Partial<NActionCatalog>
   audit?: NAudit
-  routes?: Record<string, (payload?: any) => Promise<NResult> | NResult>
+  routes?: Record<string, (payload?: Record<string, unknown>) => Promise<NResult> | NResult>
   specs?: NActionSpec[]
   i18n?: Partial<NI18nConfig>
   seedLexicon?: Array<{ locale: string; terms: Record<string, string> }>

@@ -1,4 +1,5 @@
 import type { NLocale } from './types'
+import type { NTelemetry } from './telemetry'
 
 export type NCanonical = string
 
@@ -16,7 +17,7 @@ export interface NLexicon {
   lookupPhonetic(locale: 'es' | 'en', term: string): string | null
 }
 
-export function createLexicon(telemetry?: { emit?: Function }): NLexicon {
+export function createLexicon(telemetry?: Pick<NTelemetry, 'emit'>): NLexicon {
   const entries: Record<NLocale, Record<string, NSense>> = {}
   const phonetics: Record<'es' | 'en', Record<string, string>> = {
     es: {},
@@ -97,7 +98,7 @@ export function createLexicon(telemetry?: { emit?: Function }): NLexicon {
       }
       const short = locale.split('-')[0]
       const base = entries[short] ?? {}
-        let result: string | undefined = base[lower]?.canonical
+      let result: string | undefined = base[lower]?.canonical
       if (!result) {
         const phonetic = this.lookupPhonetic(short as 'es' | 'en', lower)
         if (phonetic) {

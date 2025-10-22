@@ -65,6 +65,12 @@ More examples and framework-specific guides live in [`docs/recipes.md`](./docs/r
 
 Generated API documentation (via TypeDoc) will be published under `docs/api/` during releases.
 
+Generate local API docs with:
+
+```bash
+pnpm run build:docs
+```
+
 ## 🧭 Roadmap & Project Status
 
 - Project maturity: **Alpha** – APIs may change, feedback welcome.

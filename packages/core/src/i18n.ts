@@ -1,4 +1,5 @@
 import type { NLocale as CoreLocale } from './types'
+import type { NTelemetry } from './telemetry'
 
 export type NLocale = CoreLocale
 
@@ -24,7 +25,7 @@ export interface NI18n {
 }
 
 export function createI18n(
-  cfg: NI18nConfig & { telemetry?: { emit?: Function } },
+  cfg: NI18nConfig & { telemetry?: Pick<NTelemetry, 'emit'> },
 ): NI18n {
   const bundles: Record<NLocale, NBundle> = structuredClone(cfg.bundles ?? {})
   let _locale: NLocale = cfg.detect?.() ?? cfg.defaultLocale
