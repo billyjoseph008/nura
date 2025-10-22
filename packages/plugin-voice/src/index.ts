@@ -242,6 +242,7 @@ export function deriveIntentsFromSpecs(
             meta: {
               desc: phrase,
               confidenceThreshold: spec.meta?.confidenceThreshold,
+              requireConfirm: spec.meta?.requireConfirm,
             },
           }
         },
@@ -402,4 +403,5 @@ export function voiceAgent(opts: NVoiceOptions = {}): NAgent {
 }
 
 export { matchUtterance } from './matchUtterance'
+export { detectWake, normalizeWakeWords, stripWake } from './wake'
 export type { NIntent, NVoiceOptions } from './types'

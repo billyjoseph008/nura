@@ -53,6 +53,7 @@ export type ModernNAction = {
     via?: 'exact' | 'phonetic' | 'global'
     wakeVia?: string
     confidenceThreshold?: number
+    requireConfirm?: boolean
   }
 }
 
@@ -90,6 +91,7 @@ export interface NActionSpec {
   meta?: {
     confidenceThreshold?: number
     desc?: string
+    requireConfirm?: boolean
   }
 }
 

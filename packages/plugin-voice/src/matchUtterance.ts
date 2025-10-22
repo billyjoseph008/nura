@@ -158,6 +158,12 @@ function emitDebug(ctx: NContext, input: string, results: IntentMatchResult[]) {
     topK: ranked,
     tokensCompared: best.tokensCompared,
     entitiesParsed: best.entitiesParsed,
+    threshold: isModernAction(best.action)
+      ? best.action.meta?.confidenceThreshold ?? null
+      : null,
+    requireConfirm: isModernAction(best.action)
+      ? Boolean(best.action.meta?.requireConfirm)
+      : false,
   })
 }
 

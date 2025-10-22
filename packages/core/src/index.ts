@@ -33,23 +33,30 @@ export class Nura {
     let allowed = true
     let reason: string | undefined
 
+    let policy: ReturnType<typeof decidePolicy> = 'allow'
+
     if (rule) {
       if (!hasRole(rule, actor)) {
         allowed = false
         reason = 'forbidden:role'
       } else {
-        const policy = decidePolicy(rule)
+        policy = decidePolicy(rule)
         if (policy === 'deny') {
           allowed = false
           reason = 'forbidden:policy'
-        } else if (policy === 'confirm') {
-          const confirmFn = config.confirm ?? defaultConfirm
-          const ok = await Promise.resolve(confirmFn({ action, scope, rule }))
-          if (!ok) {
-            allowed = false
-            reason = 'cancelled:confirm'
-          }
         }
+      }
+    }
+
+    if (
+      allowed &&
+      (policy === 'confirm' || ('type' in action && action.meta?.requireConfirm))
+    ) {
+      const confirmFn = config.confirm ?? defaultConfirm
+      const ok = await Promise.resolve(confirmFn({ action, scope, rule }))
+      if (!ok) {
+        allowed = false
+        reason = 'cancelled:confirm'
       }
     }
 
