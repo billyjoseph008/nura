@@ -26,8 +26,10 @@
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
-    "lint": "eslint . --ext .ts",
-    "test": "pnpm build && node --test \"test/**/*.mjs\""
+    "lint": "eslint . --ext .ts,.tsx,.mts,.cts",
+    "lint:fix": "eslint . --ext .ts,.tsx,.mts,.cts --fix",
+    "test": "pnpm build && node --test \"test/**/*.mjs\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^15.2.3",

@@ -18,6 +18,8 @@
     "build": "echo \"(todo)\"",
     "start": "next start",
     "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
     "clean": "rm -rf .next"
   },
   "dependencies": {

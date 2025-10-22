@@ -26,8 +26,10 @@
   "scripts": {
     "build": "echo \"(todo)\"",
     "dev": "echo \"(todo)\"",
-    "lint": "eslint . --ext .ts,.tsx,.vue --max-warnings=0",
-    "clean": "rm -rf dist"
+    "lint": "eslint . --ext .ts,.tsx,.mts,.cts",
+    "lint:fix": "eslint . --ext .ts,.tsx,.mts,.cts --fix",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "keywords": [
     "nura",
