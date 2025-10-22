@@ -42,19 +42,31 @@ export interface NEntityDef {
   ) => string
 }
 
+export interface NActionMeta {
+  /** Hint de prioridad para ranking */
+  priority?: 'soft' | 'normal' | 'hard'
+  /** Descripción amigable utilizada en telemetría o interfaces */
+  desc?: string
+  /** Confianza calculada para la coincidencia actual */
+  confidence?: number
+  /** Origen del match utilizado por adaptadores de voz */
+  via?: 'exact' | 'phonetic' | 'global'
+  /** Hint del origen del wake word */
+  wakeVia?: string
+  /** Umbral sugerido para fuzzy matching */
+  confidenceThreshold?: number
+  /**
+   * Si la acción requiere confirmación explícita antes de ejecutarse
+   * (p.ej., acciones destructivas). Leído opcionalmente por adaptadores.
+   */
+  requireConfirm?: boolean
+}
+
 export type ModernNAction = {
   type: NActionType
   target?: string
   payload?: Record<string, unknown>
-  meta?: {
-    priority?: 'soft' | 'normal' | 'hard'
-    desc?: string
-    confidence?: number
-    via?: 'exact' | 'phonetic' | 'global'
-    wakeVia?: string
-    confidenceThreshold?: number
-    requireConfirm?: boolean
-  }
+  meta?: NActionMeta
 }
 
 export interface LegacyNuraAction {
@@ -88,11 +100,7 @@ export interface NActionSpec {
     commands?: Array<{ locale: 'es' | 'en'; variants: string[] }>
     entities?: Record<string, string[]>
   }
-  meta?: {
-    confidenceThreshold?: number
-    desc?: string
-    requireConfirm?: boolean
-  }
+  meta?: Pick<NActionMeta, 'confidenceThreshold' | 'desc' | 'priority' | 'requireConfirm'>
 }
 
 export interface NAgent {
