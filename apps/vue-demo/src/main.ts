@@ -3,6 +3,7 @@ import App from './App.vue'
 import { Nura, createRegistry, type NContext } from '@nura/core'
 import { withVue } from '@nura/vue'
 import { mountLexiconPanel } from '@nura/devtools-lexicon'
+import { installNuraBridge } from './nura/bootstrap.js'
 
 const registry = createRegistry({
   config: { app: { id: 'demo-nura' } },
@@ -24,6 +25,8 @@ const ctx: NContext = {
   i18n: registry.i18n,
   lexicon: registry.lexicon,
 }
+
+installNuraBridge(nura, ctx)
 
 const app = createApp(App)
 withVue(nura).install(app)
