@@ -18,7 +18,8 @@
     "build": "echo \"examples build\"",
     "lint": "eslint . --ext .ts,.tsx,.mts,.cts",
     "lint:fix": "eslint . --ext .ts,.tsx,.mts,.cts --fix",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck:skip": "echo skipped"
   },
   "dependencies": {
     "@nura/core": "workspace:*",
