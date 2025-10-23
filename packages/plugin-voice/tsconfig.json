@@ -8,5 +8,5 @@
     "skipLibCheck": true,
     "declaration": false
   },
-  "include": ["src", "src/types.augment.core.d.ts"]
+  "include": ["src"]
 }
