@@ -1,10 +1,11 @@
 import { Nura, createRegistry, defineActionSpec } from '@nura/core'
+import type { NActionSpec } from '@nura/core'
 import { seedLexicon } from '@nura/core/seeds/lexicon'
 import { voiceAgent } from '@nura/plugin-voice'
 
 type DemoContext = Parameters<ReturnType<typeof voiceAgent>['start']>[0]
 
-const specs = [
+const specs: NActionSpec[] = [
   defineActionSpec({
     name: 'open_orders_menu',
     type: 'open',
@@ -43,7 +44,9 @@ const specs = [
         labels: ['order', 'delete'],
       },
     },
-    validate: (payload) => typeof payload?.id === 'number' && payload.id > 0,
+    validate: (payload: unknown) =>
+      typeof (payload as { id?: unknown } | undefined)?.id === 'number' &&
+      (payload as { id: number }).id > 0,
   }),
   defineActionSpec({
     name: 'filter_orders_by_range',
@@ -62,7 +65,7 @@ const specs = [
         synonyms: ['filter orders from {range}'],
       },
     },
-    validate: (payload) => {
+    validate: (payload: unknown) => {
       const range = (payload as { range?: { min?: number; max?: number } } | undefined)?.range
       return range?.min != null && range?.max != null
     },
@@ -78,7 +81,8 @@ const specs = [
       'es-CR': { canonical: ['activar modo oscuro {enabled}'] },
       'en-US': { canonical: ['enable dark mode {enabled}'] },
     },
-    validate: (payload) => typeof (payload as { enabled?: unknown } | undefined)?.enabled === 'boolean',
+    validate: (payload: unknown) =>
+      typeof (payload as { enabled?: unknown } | undefined)?.enabled === 'boolean',
   }),
   defineActionSpec({
     name: 'schedule_report',
@@ -94,7 +98,7 @@ const specs = [
       'es-CR': { canonical: ['programa reporte {when} {kind}'] },
       'en-US': { canonical: ['schedule report {when} {kind}'] },
     },
-    validate: (payload) => (payload as { when?: unknown } | undefined)?.when instanceof Date,
+    validate: (payload: unknown) => (payload as { when?: unknown } | undefined)?.when instanceof Date,
   }),
 ]
 
@@ -102,13 +106,19 @@ export const registry = createRegistry({
   config: { app: { id: 'demo-i18n', locale: 'es-CR' } },
   routes: {
     'open::menu:orders': async () => ({ ok: true }),
-    'delete::order': async (payload) => ({ ok: true, message: `deleted ${payload?.id}` }),
-    'filter::order': async (payload) => ({ ok: true, message: JSON.stringify(payload) }),
-    'set::ui:darkmode': async (payload) => ({
+    'delete::order': async (payload: unknown) => ({
+      ok: true,
+      message: `deleted ${(payload as { id?: unknown } | undefined)?.id ?? ''}`,
+    }),
+    'filter::order': async (payload: unknown) => ({ ok: true, message: JSON.stringify(payload) }),
+    'set::ui:darkmode': async (payload: unknown) => ({
       ok: true,
       message: `darkmode ${String((payload as { enabled?: unknown } | undefined)?.enabled)}`,
     }),
-    'create::report': async (payload) => ({ ok: true, message: `scheduled ${(payload as any)?.kind ?? ''}` }),
+    'create::report': async (payload: unknown) => ({
+      ok: true,
+      message: `scheduled ${(payload as { kind?: unknown } | undefined)?.kind ?? ''}`,
+    }),
   },
   specs,
   seedLexicon,
@@ -137,7 +147,7 @@ agent.start({
   registry: runtimeRegistry,
   i18n: runtimeRegistry.i18n,
   lexicon: runtimeRegistry.lexicon,
-  act: (action) => nura.act(action),
-  select: (selector) => Array.from(document.querySelectorAll(selector)),
+  act: (action: Parameters<Nura['act']>[0]) => nura.act(action),
+  select: (selector: string) => Array.from(document.querySelectorAll(selector)),
   audit: { log: () => {} },
 } as DemoContext)

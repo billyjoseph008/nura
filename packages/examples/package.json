@@ -24,5 +24,9 @@
   "dependencies": {
     "@nura/core": "workspace:*",
     "@nura/plugin-voice": "workspace:*"
+  },
+  "devDependencies": {
+    "@nura/core": "workspace:*",
+    "@nura/plugin-voice": "workspace:*"
   }
 }
