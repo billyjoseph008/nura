@@ -98,6 +98,7 @@ export class Nura {
   }
 }
 
+export type { NActionMeta, NActionSpecMeta } from './types/action'
 export * from './types'
 export { createRegistry } from './create-registry'
 export { createActionCatalog, defineActionSpec } from './actions'

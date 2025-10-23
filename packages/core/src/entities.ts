@@ -1,10 +1,14 @@
-export type { ParseCtx } from './entities/types'
-export {
-  parseBoolean,
-  parseEnum,
-  parseDate,
-  parseRangeNumber,
+import {
+  parseBoolean as parseBooleanInternal,
+  parseEnum as parseEnumInternal,
+  parseDate as parseDateInternal,
+  parseRangeNumber as parseRangeNumberInternal,
 } from './entities/parsers'
+export type { ParseCtx } from './entities/types'
+export const parseBoolean = parseBooleanInternal
+export const parseEnum = parseEnumInternal
+export const parseDate = parseDateInternal
+export const parseRangeNumber = parseRangeNumberInternal
 
 export function parseNumber(raw: string): number | undefined {
   const normalized = raw.replace(/\s+/g, '').replace(/,/g, '.')

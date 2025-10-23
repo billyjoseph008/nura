@@ -1,8 +1,7 @@
+import type { NActionMeta, NActionSpecMeta } from '@nura/core'
 import type {
   NAction,
-  NActionMeta,
   NActionSpec,
-  NActionSpecMeta,
   NContext,
   NEntityDef,
   NLocale,
