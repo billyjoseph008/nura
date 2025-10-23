@@ -1,4 +1,4 @@
-export const seedLexicon = [
+export const seedLexicon: Array<{ locale: string; terms: Record<string, string> }> = [
   {
     locale: 'es',
     terms: {
