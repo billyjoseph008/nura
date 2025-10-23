@@ -14,9 +14,13 @@ export type NActionType =
   | 'set'
   | 'navigate'
   | 'focus'
+  | 'view'
+  | 'hover'
   | 'speak'
   | 'custom'
   | 'click'
+  | 'reset'
+  | 'increment'
 
 export type NLocale = string
 
@@ -143,6 +147,7 @@ export interface NAudit {
 export interface NConfig {
   app: { id: string; locale?: string }
   capabilities?: Partial<{ voice: boolean; rpa: boolean; analytics: boolean }>
+  debug?: boolean
   resolveScope?: (action: NAction) => string | undefined
   confirm?: NConfirmFn
   actor?: () => NActor | undefined
