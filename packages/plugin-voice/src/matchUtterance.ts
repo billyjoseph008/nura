@@ -9,10 +9,10 @@ import {
   parseRangeNumber,
   parseNumber,
 } from '@nura/core/entities'
+import type { NActionSpecMeta } from '@nura/core'
 import type {
   ModernNAction,
   NAction,
-  NActionSpecMeta,
   NContext,
   NEntityDef,
   NLocale,

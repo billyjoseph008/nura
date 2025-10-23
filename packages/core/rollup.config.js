@@ -24,7 +24,7 @@ export default [
     ],
     plugins: [
       nodeResolve({ extensions: ['.ts', '.tsx'] }),
-      typescript({ tsconfig: './tsconfig.build.json', declaration: false }),
+      typescript({ tsconfig: './tsconfig.build.json' }),
     ],
     external,
   },

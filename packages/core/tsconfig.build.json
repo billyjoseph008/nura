@@ -4,9 +4,15 @@
     "declaration": true,
     "declarationMap": true,
     "emitDeclarationOnly": false,
-    "noEmitOnError": true,
-    "outDir": "./dist"
+    "outDir": "dist",
+    "rootDir": "src",
+    "rootDirs": ["src"],
+    "paths": {
+      "@nura/plugin-fuzzy": ["./src/types/plugin-fuzzy"],
+      "@nura/plugin-fuzzy/*": ["./src/types/plugin-fuzzy"]
+    },
+    "verbatimModuleSyntax": true,
+    "composite": false
   },
-  "include": ["src/**/*"],
-  "exclude": ["**/*.spec.ts", "test", "dist", "node_modules"]
+  "include": ["src"]
 }
