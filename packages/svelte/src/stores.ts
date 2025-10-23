@@ -1,21 +1,26 @@
 import { writable, type Readable } from "svelte/store"
 import { getNuraContext } from "./context"
-import type { NuraAction, NuraElement, NuraScope, NuraVerb } from "@nura/core"
+import type { NuraElement, NuraScope, NuraVerb } from "@nura/core"
+
+type ActionSpecList = ReturnType<
+  ReturnType<typeof getNuraContext>["registry"]["actions"]["listSpecs"]
+>
 
 export function createNuraStore() {
   const { registry, indexer } = getNuraContext()
 
-  const actions = writable<NuraAction[]>([])
+  const listSpecs = () => registry.actions.listSpecs()
+  const actions = writable<ActionSpecList>([])
   const elements = writable<NuraElement[]>([])
 
   // Update actions when registry changes
-  registry.on("action:registered", () => {
-    actions.set(registry.getActions())
-  })
+  const updateActions = () => {
+    actions.set(listSpecs())
+  }
 
-  registry.on("action:unregistered", () => {
-    actions.set(registry.getActions())
-  })
+  registry.on("action:registered", updateActions)
+
+  registry.on("action:unregistered", updateActions)
 
   // Update elements when indexer changes
   const updateElements = () => {
@@ -23,7 +28,7 @@ export function createNuraStore() {
   }
 
   // Initial load
-  actions.set(registry.getActions())
+  updateActions()
   updateElements()
 
   return {
@@ -34,12 +39,14 @@ export function createNuraStore() {
   }
 }
 
-export function createActionStore(scope?: NuraScope): Readable<NuraAction[]> {
+export function createActionStore(scope?: NuraScope): Readable<ActionSpecList> {
   const { registry } = getNuraContext()
-  const store = writable<NuraAction[]>([])
+  const getSpecs = () => registry.actions.listSpecs()
+  const store = writable<ActionSpecList>([])
 
   const update = () => {
-    store.set(registry.getActions(scope))
+    const specs = getSpecs()
+    store.set(scope ? specs.filter((spec) => spec.scope === scope) : specs)
   }
 
   registry.on("action:registered", update)

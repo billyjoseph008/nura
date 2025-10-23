@@ -10,7 +10,10 @@ export interface NuraActionRegistrationParams {
   metadata?: Record<string, any>
 }
 
-export const nuraAction: Action<HTMLElement, NuraActionRegistrationParams> = (node, params) => {
+export const nuraAction: Action<HTMLElement, NuraActionRegistrationParams> = (
+  _node,
+  params,
+) => {
   const { registry } = getNuraContext()
 
   const register = (params: NuraActionRegistrationParams) => {
