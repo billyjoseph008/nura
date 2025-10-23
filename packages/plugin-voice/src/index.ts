@@ -2,6 +2,7 @@ import type {
   NAgent,
   NContext,
   NActionSpec,
+  NActionSpecMeta,
   NEntityDef,
   NLocale,
   NAction,
@@ -48,6 +49,10 @@ type NuraSpeechRecognition = {
 }
 
 type SpeechRecognitionConstructor = new () => NuraSpeechRecognition
+
+type VoiceActionSpec = Omit<NActionSpec, 'meta'> & {
+  meta?: NActionSpecMeta
+}
 
 function escapeRegex(s: string) {
   return s.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&')
@@ -190,7 +195,7 @@ function phraseToRegExp(phrase: string, entities?: NEntityDef[]) {
 }
 
 export function deriveIntentsFromSpecs(
-  specs: NActionSpec[],
+  specs: VoiceActionSpec[],
   ctx: NContext,
   locale: NLocale,
 ): NIntent[] {
@@ -278,7 +283,7 @@ export function deriveIntentsFromSpecs(
   return intents
 }
 
-function getSpecsFromCtx(ctx: NContext): NActionSpec[] {
+function getSpecsFromCtx(ctx: NContext): VoiceActionSpec[] {
   try {
     return ctx.registry.actions.listSpecs()
   } catch {
@@ -286,7 +291,10 @@ function getSpecsFromCtx(ctx: NContext): NActionSpec[] {
   }
 }
 
-function gatherWakeInputs(base: WakeWordInput[] | undefined, specs: NActionSpec[]): WakeWordInput[] {
+function gatherWakeInputs(
+  base: WakeWordInput[] | undefined,
+  specs: VoiceActionSpec[],
+): WakeWordInput[] {
   const inputs: WakeWordInput[] = [...(base ?? [])]
   for (const spec of specs) {
     for (const alias of collectWakeVariants(spec)) {

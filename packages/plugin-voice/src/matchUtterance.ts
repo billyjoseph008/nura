@@ -9,7 +9,14 @@ import {
   parseRangeNumber,
   parseNumber,
 } from '@nura/core/entities'
-import type { ModernNAction, NAction, NContext, NEntityDef, NLocale } from '@nura/core'
+import type {
+  ModernNAction,
+  NAction,
+  NActionSpecMeta,
+  NContext,
+  NEntityDef,
+  NLocale,
+} from '@nura/core'
 import { toNumberLoose } from '@nura/core/nlp/numerals'
 
 import type {
@@ -17,6 +24,7 @@ import type {
   MatchPipelineOpts,
   NIntent,
   TokenComparison,
+  VoiceActionMeta,
 } from './types'
 import { normalizeUtterance } from './text'
 
@@ -134,9 +142,11 @@ export function matchUtterance(
   results.sort((a, b) => b.score - a.score)
 
   const best = results[0]
-  const targetThreshold = isModernAction(best.action)
-    ? best.action.meta?.confidenceThreshold ?? threshold
-    : threshold
+  const bestMeta: VoiceActionMeta | undefined = isModernAction(best.action)
+    ? best.action.meta
+    : undefined
+  const bestSpecMeta: NActionSpecMeta | undefined = bestMeta
+  const targetThreshold = bestSpecMeta?.confidenceThreshold ?? threshold
   if (best.score < targetThreshold) return undefined
 
   if (devMode) {
@@ -153,17 +163,17 @@ function emitDebug(ctx: NContext, input: string, results: IntentMatchResult[]) {
     via: entry.via,
   }))
   const best = results[0]
+  const bestMeta: VoiceActionMeta | undefined = isModernAction(best.action)
+    ? best.action.meta
+    : undefined
+  const bestSpecMeta: NActionSpecMeta | undefined = bestMeta
   ctx.registry.telemetry.emit('voice.intent.rank.debug', {
     input,
     topK: ranked,
     tokensCompared: best.tokensCompared,
     entitiesParsed: best.entitiesParsed,
-    threshold: isModernAction(best.action)
-      ? best.action.meta?.confidenceThreshold ?? null
-      : null,
-    requireConfirm: isModernAction(best.action)
-      ? Boolean(best.action.meta?.requireConfirm)
-      : false,
+    threshold: bestSpecMeta?.confidenceThreshold ?? null,
+    requireConfirm: Boolean(bestSpecMeta?.requireConfirm),
   })
 }
 
