@@ -6,12 +6,6 @@
     "emitDeclarationOnly": false,
     "outDir": "dist",
     "rootDir": "src",
-    "rootDirs": ["src"],
-    "paths": {
-      "@nura/plugin-fuzzy": ["./src/types/plugin-fuzzy"],
-      "@nura/plugin-fuzzy/*": ["./src/types/plugin-fuzzy"]
-    },
-    "verbatimModuleSyntax": true,
     "composite": false
   },
   "include": ["src"]

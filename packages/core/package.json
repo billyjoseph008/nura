@@ -13,62 +13,16 @@
   "bugs": {
     "url": "https://github.com/nura-dev/nura/issues"
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./i18n": {
-      "types": "./dist/i18n.d.ts",
-      "import": "./dist/i18n.js"
-    },
-    "./lexicon": {
-      "types": "./dist/lexicon.d.ts",
-      "import": "./dist/lexicon.js"
-    },
-    "./entities": {
-      "types": "./dist/entities.d.ts",
-      "import": "./dist/entities.js"
-    },
-    "./seeds/lexicon": {
-      "types": "./dist/seeds/lexicon.d.ts",
-      "import": "./dist/seeds/lexicon.js"
-    },
-    "./registry": {
-      "types": "./dist/registry.d.ts",
-      "import": "./dist/registry.js"
-    },
-    "./nlp/numerals": {
-      "types": "./dist/nlp/numerals.d.ts",
-      "import": "./dist/nlp/numerals.js"
-    },
-    "./actions": {
-      "types": "./dist/actions.d.ts",
-      "import": "./dist/actions.js"
-    },
-    "./package.json": "./package.json"
-  },
-  "typesVersions": {
-    "*": {
-      "": ["dist/index.d.ts"],
-      "i18n": ["dist/i18n.d.ts"],
-      "lexicon": ["dist/lexicon.d.ts"],
-      "entities": ["dist/entities.d.ts"],
-      "seeds/lexicon": ["dist/seeds/lexicon.d.ts"],
-      "registry": ["dist/registry.d.ts"],
-      "nlp/numerals": ["dist/nlp/numerals.d.ts"],
-      "actions": ["dist/actions.d.ts"]
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
     }
   },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE",
-    "package.json"
-  ],
+  "files": ["dist"],
   "sideEffects": false,
   "scripts": {
     "build": "rollup -c",
