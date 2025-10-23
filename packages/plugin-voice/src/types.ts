@@ -1,4 +1,12 @@
-import type { NAction, NActionSpec, NContext, NEntityDef, NLocale } from '@nura/core'
+import type {
+  NAction,
+  NActionMeta,
+  NActionSpec,
+  NActionSpecMeta,
+  NContext,
+  NEntityDef,
+  NLocale,
+} from '@nura/core'
 
 export type NIntent = {
   name: string
@@ -61,8 +69,10 @@ export type RankDebugEvent = {
   requireConfirm: boolean
 }
 
+export type VoiceActionMeta = NActionSpecMeta & Pick<NActionMeta, 'confidence' | 'via' | 'wakeVia'>
+
 export type IntentMatchResult = {
-  action: NAction
+  action: NAction & { meta?: VoiceActionMeta | undefined }
   score: number
   via: 'exact' | 'phonetic' | 'global'
   tokensCompared: TokenComparison[]
