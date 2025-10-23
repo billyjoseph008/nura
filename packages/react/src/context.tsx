@@ -13,13 +13,13 @@ const NuraContext = createContext<NuraContextValue | null>(null)
 
 export interface NuraProviderProps {
   children: ReactNode
-  config?: NuraConfig
+  config?: Partial<NuraConfig>
   registry?: NuraRegistry
 }
 
 export function NuraProvider({ children, config, registry: externalRegistry }: NuraProviderProps) {
   const [contextValue] = useState<NuraContextValue>(() => {
-    const registry = externalRegistry || createRegistry(config)
+    const registry = externalRegistry || createRegistry(config ? { config } : undefined)
     const indexer = new DOMIndexer({
       autoScan: true,
       observeChanges: true,

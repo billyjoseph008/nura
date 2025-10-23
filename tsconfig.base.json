@@ -25,68 +25,52 @@
     "baseUrl": ".",
     "paths": {
       "@nura/core": [
-        "packages/core/dist/index.d.ts",
-        "packages/core/src/index.ts"
+        "packages/core/dist/index.d.ts"
       ],
       "@nura/core/*": [
-        "packages/core/dist/*",
-        "packages/core/src/*"
+        "packages/core/dist/*"
       ],
       "@nura/dom": [
-        "packages/dom/dist/index.d.ts",
-        "packages/dom/src/index.ts"
+        "packages/dom/dist/index.d.ts"
       ],
       "@nura/dom/*": [
-        "packages/dom/dist/*",
-        "packages/dom/src/*"
+        "packages/dom/dist/*"
       ],
       "@nura/react": [
-        "packages/react/dist/index.d.ts",
-        "packages/react/src/index.ts"
+        "packages/react/dist/index.d.ts"
       ],
       "@nura/react/*": [
-        "packages/react/dist/*",
-        "packages/react/src/*"
+        "packages/react/dist/*"
       ],
       "@nura/vue": [
-        "packages/vue/dist/index.d.ts",
-        "packages/vue/src/index.ts"
+        "packages/vue/dist/index.d.ts"
       ],
       "@nura/vue/*": [
-        "packages/vue/dist/*",
-        "packages/vue/src/*"
+        "packages/vue/dist/*"
       ],
       "@nura/svelte": [
-        "packages/svelte/dist/index.d.ts",
-        "packages/svelte/src/index.ts"
+        "packages/svelte/dist/index.d.ts"
       ],
       "@nura/svelte/*": [
-        "packages/svelte/dist/*",
-        "packages/svelte/src/*"
+        "packages/svelte/dist/*"
       ],
       "@nura/plugin-voice": [
-        "packages/plugin-voice/dist/index.d.ts",
-        "packages/plugin-voice/src/index.ts"
+        "packages/plugin-voice/dist/index.d.ts"
       ],
       "@nura/plugin-voice/*": [
-        "packages/plugin-voice/dist/*",
-        "packages/plugin-voice/src/*"
+        "packages/plugin-voice/dist/*"
       ],
       "@nura/plugin-fuzzy": [
-        "packages/plugin-fuzzy/dist/index.d.ts",
-        "packages/plugin-fuzzy/src/index.ts"
+        "packages/plugin-fuzzy/dist/index.d.ts"
       ],
       "@nura/plugin-fuzzy/*": [
-        "packages/plugin-fuzzy/dist/*",
-        "packages/plugin-fuzzy/src/*"
+        "packages/plugin-fuzzy/dist/*"
       ],
       "@nura/devtools-lexicon": [
-        "packages/devtools-lexicon/dist/index.d.ts",
-        "packages/devtools-lexicon/src/index.ts"
+        "packages/devtools-lexicon/dist/index.d.ts"
       ],
       "@nura/devtools-lexicon/*": [
-        "packages/devtools-lexicon/dist/*",
-        "packages/devtools-lexicon/src/*"
+        "packages/devtools-lexicon/dist/*"
       ]
     }
   },

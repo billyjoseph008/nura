@@ -92,8 +92,13 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import type { NContext } from '@nura/core'
-import type { NLocale } from '@nura/core/i18n'
+import type {
+  LegacyNuraAction,
+  ModernNAction,
+  NAction,
+  NContext,
+  NLocale,
+} from '@nura/core'
 import { listTerms, setTerm, deleteTerm, importJson, exportJson, type LexRow } from './store'
 import type { LexiconPanelOptions } from './index'
 import { detectLocale, matchUtterance, deriveIntentsFromSpecs } from '@nura/plugin-voice'
@@ -230,13 +235,7 @@ function probe() {
     result.value = {
       locale: detected,
       norm: text.toLowerCase(),
-      best: action
-        ? {
-            name: `${action.type}${action.target ? `::${String(action.target)}` : ''}`,
-            payload: JSON.stringify(action.payload ?? null),
-            score: 1,
-          }
-        : null,
+      best: toProbeBest(action),
       candidates: [],
     }
 
@@ -246,6 +245,35 @@ function probe() {
   } finally {
     busy.value = false
   }
+}
+
+function toProbeBest(action: NAction | undefined): ProbeBest | null {
+  if (!action) return null
+  if (isModernAction(action)) {
+    const name = `${action.type}${action.target ? `::${String(action.target)}` : ''}`
+    return {
+      name,
+      payload: JSON.stringify(action.payload ?? null),
+      score: 1,
+    }
+  }
+  if (isLegacyAction(action)) {
+    const name = `${action.verb}${action.scope ? `::${String(action.scope)}` : ''}`
+    return {
+      name,
+      payload: JSON.stringify(action.metadata ?? null),
+      score: 1,
+    }
+  }
+  return null
+}
+
+function isModernAction(action: NAction): action is ModernNAction {
+  return action != null && typeof action === 'object' && 'type' in action
+}
+
+function isLegacyAction(action: NAction): action is LegacyNuraAction {
+  return action != null && typeof action === 'object' && 'verb' in action
 }
 
 onMounted(() => {

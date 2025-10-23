@@ -3,6 +3,7 @@ import { useNuraElement, type UseNuraElementOptions } from "../use-nura-element"
 
 export interface NuraElementProps extends UseNuraElementOptions, Omit<ComponentPropsWithRef<"div">, "ref"> {
   as?: ElementType
+  href?: string
 }
 
 export const NuraElement = forwardRef<HTMLElement, NuraElementProps>(
