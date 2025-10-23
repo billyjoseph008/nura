@@ -92,6 +92,7 @@
     "typescript": "^5.4.0"
   },
   "dependencies": {
-    "@nura/plugin-fuzzy": "workspace:*"
+    "@nura/plugin-fuzzy": "workspace:*",
+    "tslib": "^2.6.2"
   }
 }

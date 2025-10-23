@@ -1,6 +1,7 @@
 import type { NI18n } from './i18n'
 import type { NLexicon } from './lexicon'
 import type { NTelemetry } from './telemetry'
+import type { NActionMeta, NActionSpecMeta } from './types/action'
 
 export type NActionType =
   | 'open'
@@ -42,26 +43,6 @@ export interface NEntityDef {
   ) => string
 }
 
-export interface NActionMeta {
-  /** Hint de prioridad para ranking */
-  priority?: 'soft' | 'normal' | 'hard'
-  /** Descripción amigable utilizada en telemetría o interfaces */
-  desc?: string
-  /** Confianza calculada para la coincidencia actual */
-  confidence?: number
-  /** Origen del match utilizado por adaptadores de voz */
-  via?: 'exact' | 'phonetic' | 'global'
-  /** Hint del origen del wake word */
-  wakeVia?: string
-  /** Umbral sugerido para fuzzy matching */
-  confidenceThreshold?: number
-  /**
-   * Si la acción requiere confirmación explícita antes de ejecutarse
-   * (p.ej., acciones destructivas). Leído opcionalmente por adaptadores.
-   */
-  requireConfirm?: boolean
-}
-
 export type ModernNAction = {
   type: NActionType
   target?: string
@@ -85,11 +66,6 @@ export type NAction = ModernNAction | LegacyNuraAction
  * These fields are safe to define at registration time and are surfaced to
  * adapters such as voice interfaces for ranking, prompting and confirmation.
  */
-export type NActionSpecMeta = Pick<
-  NActionMeta,
-  'confidenceThreshold' | 'desc' | 'priority' | 'requireConfirm'
->
-
 export interface NActionSpec {
   name: string
   type: NActionType
