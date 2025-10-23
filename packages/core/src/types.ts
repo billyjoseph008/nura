@@ -79,6 +79,17 @@ export interface LegacyNuraAction {
 
 export type NAction = ModernNAction | LegacyNuraAction
 
+/**
+ * Static metadata that can be declared alongside an {@link NActionSpec}.
+ *
+ * These fields are safe to define at registration time and are surfaced to
+ * adapters such as voice interfaces for ranking, prompting and confirmation.
+ */
+export type NActionSpecMeta = Pick<
+  NActionMeta,
+  'confidenceThreshold' | 'desc' | 'priority' | 'requireConfirm'
+>
+
 export interface NActionSpec {
   name: string
   type: NActionType
@@ -100,7 +111,7 @@ export interface NActionSpec {
     commands?: Array<{ locale: 'es' | 'en'; variants: string[] }>
     entities?: Record<string, string[]>
   }
-  meta?: Pick<NActionMeta, 'confidenceThreshold' | 'desc' | 'priority' | 'requireConfirm'>
+  meta?: NActionSpecMeta
 }
 
 export interface NAgent {
