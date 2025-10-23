@@ -14,18 +14,17 @@
     "url": "https://github.com/nura-dev/nura/issues"
   },
   "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
+      "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     }
   },
+  "files": ["dist"],
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts --treeshake --minify",
-    "dev": "tsup src/index.ts --format cjs,esm --dts --treeshake --watch",
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
     "lint": "eslint . --ext .ts,.tsx,.mts,.cts",
     "lint:fix": "eslint . --ext .ts,.tsx,.mts,.cts --fix",
     "clean": "rm -rf dist",
@@ -36,7 +35,8 @@
     "@nura/core": "workspace:*"
   },
   "devDependencies": {
-    "tsup": "^8.0.0",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "rollup": "^4.0.0",
     "typescript": "^5.5.0"
   }
 }
