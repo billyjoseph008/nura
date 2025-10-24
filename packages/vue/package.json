@@ -25,8 +25,8 @@
   "files": ["dist"],
   "sideEffects": false,
   "scripts": {
-    "build": "rollup -c",
-    "dev": "rollup -c -w",
+    "build": "tsup src/index.ts --format cjs,esm --dts --treeshake --minify --external @nura/core,@nura/dom",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --treeshake --watch --external @nura/core,@nura/dom",
     "lint": "eslint . --ext .ts,.tsx,.mts,.cts,.vue",
     "lint:fix": "eslint . --ext .ts,.tsx,.mts,.cts,.vue --fix",
     "test": "echo \"(todo)\"",
@@ -41,10 +41,7 @@
     "@nura/core": ">=0.1.0"
   },
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-typescript": "^11.1.6",
-    "rollup": "^4.24.0",
-    "rollup-plugin-dts": "^6.1.0",
+    "tsup": "^8.5.0",
     "typescript": "^5.4.0"
   }
 }
