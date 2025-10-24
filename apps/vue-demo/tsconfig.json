@@ -5,7 +5,9 @@
     "strict": true,
     "moduleResolution": "bundler",
     "baseUrl": ".",
-    "paths": {},
+    "paths": {
+      "@nura/vue": ["../../packages/vue/dist/index.d.ts"]
+    },
     "skipLibCheck": false,
     "types": ["vite/client"]
   },
