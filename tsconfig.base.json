@@ -25,52 +25,52 @@
     "baseUrl": ".",
     "paths": {
       "@nura/core": [
-        "packages/core/dist/index.d.ts"
+        "packages/core/types/index.d.ts"
       ],
       "@nura/core/*": [
-        "packages/core/dist/*"
+        "packages/core/types/*"
       ],
       "@nura/dom": [
-        "packages/dom/dist/index.d.ts"
+        "packages/dom/types/index.d.ts"
       ],
       "@nura/dom/*": [
-        "packages/dom/dist/*"
+        "packages/dom/types/*"
       ],
       "@nura/react": [
-        "packages/react/dist/index.d.ts"
+        "packages/react/types/index.d.ts"
       ],
       "@nura/react/*": [
-        "packages/react/dist/*"
+        "packages/react/types/*"
       ],
       "@nura/vue": [
-        "packages/vue/dist/index.d.ts"
+        "packages/vue/types/index.d.ts"
       ],
       "@nura/vue/*": [
-        "packages/vue/dist/*"
+        "packages/vue/types/*"
       ],
       "@nura/svelte": [
-        "packages/svelte/dist/index.d.ts"
+        "packages/svelte/types/index.d.ts"
       ],
       "@nura/svelte/*": [
-        "packages/svelte/dist/*"
+        "packages/svelte/types/*"
       ],
       "@nura/plugin-voice": [
-        "packages/plugin-voice/dist/index.d.ts"
+        "packages/plugin-voice/types/index.d.ts"
       ],
       "@nura/plugin-voice/*": [
-        "packages/plugin-voice/dist/*"
+        "packages/plugin-voice/types/*"
       ],
       "@nura/plugin-fuzzy": [
-        "packages/plugin-fuzzy/dist/index.d.ts"
+        "packages/plugin-fuzzy/types/index.d.ts"
       ],
       "@nura/plugin-fuzzy/*": [
-        "packages/plugin-fuzzy/dist/*"
+        "packages/plugin-fuzzy/types/*"
       ],
       "@nura/devtools-lexicon": [
-        "packages/devtools-lexicon/dist/index.d.ts"
+        "packages/devtools-lexicon/types/index.d.ts"
       ],
       "@nura/devtools-lexicon/*": [
-        "packages/devtools-lexicon/dist/*"
+        "packages/devtools-lexicon/types/*"
       ]
     }
   },
