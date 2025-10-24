@@ -25,8 +25,8 @@
   "files": ["dist"],
   "sideEffects": false,
   "scripts": {
-    "build": "node ./scripts/run-tsup.mjs",
-    "dev": "node ./scripts/run-tsup.mjs --watch",
+    "build": "tsup src/index.ts --format cjs,esm --dts --treeshake --minify",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --treeshake --watch",
     "lint": "eslint . --ext .ts,.tsx,.mts,.cts,.vue",
     "lint:fix": "eslint . --ext .ts,.tsx,.mts,.cts,.vue --fix",
     "test": "echo \"(todo)\"",
