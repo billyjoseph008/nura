@@ -22,6 +22,31 @@
       "require": "./dist/index.cjs",
       "types": "./dist/index.d.ts"
     },
+    "./wake": {
+      "import": "./dist/wake.js",
+      "require": "./dist/wake.cjs",
+      "types": "./dist/wake.d.ts"
+    },
+    "./context": {
+      "import": "./dist/context.js",
+      "require": "./dist/context.cjs",
+      "types": "./dist/context.d.ts"
+    },
+    "./locale": {
+      "import": "./dist/locale.js",
+      "require": "./dist/locale.cjs",
+      "types": "./dist/locale.d.ts"
+    },
+    "./numerals": {
+      "import": "./dist/numerals.js",
+      "require": "./dist/numerals.cjs",
+      "types": "./dist/numerals.d.ts"
+    },
+    "./synonyms": {
+      "import": "./dist/synonyms.js",
+      "require": "./dist/synonyms.cjs",
+      "types": "./dist/synonyms.d.ts"
+    },
     "./entities": {
       "import": "./dist/entities.js",
       "require": "./dist/entities.cjs",
@@ -56,11 +81,16 @@
       "i18n": ["types/i18n.d.ts"],
       "lexicon": ["types/lexicon.d.ts"],
       "registry": ["types/registry.d.ts"],
+      "wake": ["types/wake.d.ts"],
+      "context": ["types/context.d.ts"],
+      "locale": ["types/locale.d.ts"],
+      "numerals": ["types/numerals.d.ts"],
+      "synonyms": ["types/synonyms.d.ts"],
       "nlp/*": ["types/nlp/*"]
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts src/entities.ts src/i18n.ts src/lexicon.ts src/registry.ts src/nlp/numerals.ts --dts --format esm,cjs --treeshake --clean",
+    "build": "tsup --config tsup.config.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "keywords": [

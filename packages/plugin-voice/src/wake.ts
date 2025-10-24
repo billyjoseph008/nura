@@ -1,4 +1,5 @@
-import { compareWakeWord, type MatchResult } from '@nura/plugin-fuzzy'
+import { compareWakeWord } from '@nura/core/wake'
+import type { MatchResult } from '@nura/plugin-fuzzy'
 
 import type { WakeWordConfig, WakeWordInput } from './types'
 
@@ -47,15 +48,21 @@ export function detectWake(
   if (entries.length === 0) return { matched: true, result: null }
   let best: { entry: WakeEntry; result: MatchResult } | null = null
   for (const entry of entries) {
-    const result = compareWakeWord(input, entry, {
+    const rawResult = compareWakeWord(input, entry, {
       locale,
       minConfidence: entry.minConfidence,
       strategy: 'hybrid',
       maxCandidates: 3,
     })
-    if (result && result.score >= entry.minConfidence) {
-      if (!best || result.score > best.result.score) {
-        best = { entry, result }
+    if (rawResult && rawResult.score >= entry.minConfidence) {
+      const normalized: MatchResult = {
+        value: rawResult.value ?? entry.canonical,
+        score: rawResult.score,
+        strategy: (rawResult.strategy ?? 'hybrid') as MatchResult['strategy'],
+        matchedTokens: (rawResult as MatchResult).matchedTokens,
+      }
+      if (!best || normalized.score > best.result.score) {
+        best = { entry, result: normalized }
       }
     }
   }
