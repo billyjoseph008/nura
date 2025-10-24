@@ -106,6 +106,11 @@ export { createI18n } from './i18n'
 export { createLexicon } from './lexicon'
 export { createTelemetry } from './telemetry'
 export * from './entities'
+export * from './wake'
+export * from './context'
+export * from './locale'
+export * from './numerals'
+export * from './synonyms'
 export type {
   NI18n,
   NI18nConfig,

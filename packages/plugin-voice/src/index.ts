@@ -440,4 +440,5 @@ export function voiceAgent(opts: NVoiceOptions = {}): NAgent {
 
 export { matchUtterance } from './matchUtterance'
 export { detectWake, normalizeWakeWords, stripWake } from './wake'
+export { compareWakeWord } from '@nura/core/wake'
 export type { NIntent, NVoiceOptions } from './types'
