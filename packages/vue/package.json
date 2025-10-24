@@ -13,20 +13,21 @@
   "bugs": {
     "url": "https://github.com/nura-dev/nura/issues"
   },
-  "main": "dist/index.js",
+  "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.cjs"
     }
   },
   "files": ["dist"],
   "sideEffects": false,
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts --treeshake --minify",
-    "dev": "tsup src/index.ts --format cjs,esm --dts --treeshake --watch",
+    "build": "tsup src/index.ts --dts --format esm,cjs --treeshake --clean",
+    "dev": "tsup src/index.ts --dts --format esm,cjs --treeshake --watch",
     "lint": "eslint . --ext .ts,.tsx,.mts,.cts,.vue",
     "lint:fix": "eslint . --ext .ts,.tsx,.mts,.cts,.vue --fix",
     "test": "echo \"(todo)\"",
