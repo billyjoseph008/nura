@@ -13,23 +13,54 @@
   "bugs": {
     "url": "https://github.com/nura-dev/nura/issues"
   },
-  "main": "dist/index.js",
+  "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
       "types": "./dist/index.d.ts"
+    },
+    "./entities": {
+      "import": "./dist/entities.js",
+      "require": "./dist/entities.cjs",
+      "types": "./dist/entities.d.ts"
+    },
+    "./i18n": {
+      "import": "./dist/i18n.js",
+      "require": "./dist/i18n.cjs",
+      "types": "./dist/i18n.d.ts"
+    },
+    "./lexicon": {
+      "import": "./dist/lexicon.js",
+      "require": "./dist/lexicon.cjs",
+      "types": "./dist/lexicon.d.ts"
+    },
+    "./registry": {
+      "import": "./dist/registry.js",
+      "require": "./dist/registry.cjs",
+      "types": "./dist/registry.d.ts"
+    },
+    "./nlp/numerals": {
+      "import": "./dist/nlp/numerals.js",
+      "require": "./dist/nlp/numerals.cjs",
+      "types": "./dist/nlp/numerals.d.ts"
     }
   },
-  "files": ["dist"],
+  "files": ["dist", "README.md", "LICENSE"],
   "sideEffects": false,
+  "typesVersions": {
+    "*": {
+      "entities": ["types/entities.d.ts"],
+      "i18n": ["types/i18n.d.ts"],
+      "lexicon": ["types/lexicon.d.ts"],
+      "registry": ["types/registry.d.ts"],
+      "nlp/*": ["types/nlp/*"]
+    }
+  },
   "scripts": {
-    "build": "rollup -c",
-    "dev": "rollup -c -w",
-    "lint": "eslint . --ext .ts,.tsx,.mts,.cts",
-    "lint:fix": "eslint . --ext .ts,.tsx,.mts,.cts --fix",
-    "test": "pnpm build && node --test \"test/**/*.mjs\"",
+    "build": "tsup src/index.ts src/entities.ts src/i18n.ts src/lexicon.ts src/registry.ts src/nlp/numerals.ts --dts --format esm,cjs --treeshake --clean",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "keywords": [
@@ -39,10 +70,7 @@
     "commands"
   ],
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-typescript": "^11.1.6",
-    "rollup": "^4.24.0",
-    "rollup-plugin-dts": "^6.1.0",
+    "tsup": "^8.5.0",
     "typescript": "^5.4.0"
   },
   "dependencies": {

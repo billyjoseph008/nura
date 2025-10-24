@@ -23,14 +23,10 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist"],
+  "files": ["dist", "README.md", "LICENSE"],
   "sideEffects": false,
   "scripts": {
     "build": "tsup src/index.ts --dts --format esm,cjs --treeshake --clean",
-    "dev": "tsup src/index.ts --dts --format esm,cjs --treeshake --watch",
-    "lint": "eslint . --ext .ts,.tsx,.mts,.cts,.vue",
-    "lint:fix": "eslint . --ext .ts,.tsx,.mts,.cts,.vue --fix",
-    "test": "echo \"(todo)\"",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "keywords": ["nura", "vue", "directives", "composables"],

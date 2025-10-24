@@ -1,11 +1,12 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "noEmit": true,
     "strict": true,
+    "declaration": true,
+    "declarationMap": true,
     "moduleResolution": "bundler",
-    "baseUrl": ".",
-    "paths": {}
+    "skipLibCheck": false,
+    "noEmit": true
   },
   "include": ["src"]
 }

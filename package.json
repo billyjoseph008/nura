@@ -17,24 +17,13 @@
     "apps/*"
   ],
   "scripts": {
-    "build": "pnpm -r run build",
-    "build:docs": "typedoc --options typedoc.json",
-    "clean": "pnpm -r exec rimraf dist && turbo run clean && rm -rf node_modules",
-    "dev": "turbo run dev",
-    "format": "prettier . --write",
-    "format:check": "prettier --check \"**/*.{ts,tsx,md,json}\"",
-    "lint": "pnpm -r --if-present run lint",
-    "lint:fix": "pnpm -r --if-present run lint:fix",
-    "test": "pnpm -r --if-present run test",
-    "test:fuzzy": "pnpm --filter @nura/plugin-fuzzy test",
-    "changeset": "changeset",
-    "release": "changeset version && pnpm run build && changeset publish",
-    "typecheck": "pnpm -r --if-present --filter \"@nura/*\" --filter \"!@nura/examples\" run typecheck",
-    "typecheck:all": "pnpm -r --if-present run typecheck",
-    "docs:dev": "vitepress dev docs",
-    "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs",
-    "docs:deploy": "gh-pages -d docs/.vitepress/dist"
+    "build": "pnpm -r --filter \"!./apps/**\" --filter \"!./packages/examples/**\" run build",
+    "typecheck": "pnpm -r --filter \"@nura/*\" --filter \"!@nura/examples\" run typecheck",
+    "build:all": "pnpm -r run build",
+    "typecheck:all": "pnpm -r run typecheck",
+    "lint": "eslint .",
+    "format:check": "prettier --check .",
+    "format:write": "prettier --write ."
   },
   "dependencies": {
     "@nura/core": "workspace:*",
