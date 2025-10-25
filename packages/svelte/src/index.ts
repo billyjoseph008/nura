@@ -1,22 +1,17 @@
-// Context
 export { initNura, getNuraContext } from "./context"
 export type { NuraContext } from "./context"
 
-// Stores
 export { createNuraStore, createActionStore, createPermissionStore } from "./stores"
 
-// Actions
 export { nura } from "./actions/nura"
 export type { NuraActionParams } from "./actions/nura"
 
 export { nuraAction } from "./actions/nura-action"
 export type { NuraActionRegistrationParams } from "./actions/nura-action"
 
-// Components
 export { default as NuraElement } from "./components/NuraElement.svelte"
 export { default as NuraProvider } from "./components/NuraProvider.svelte"
 
-// Utils
 export { useNura } from "./utils/use-nura"
 export type { UseNuraReturn } from "./utils/use-nura"
 
@@ -28,7 +23,6 @@ export type { UseNuraPermissionOptions } from "./utils/use-nura-permission"
 
 export { useNuraEvent, useNuraEvents } from "./utils/use-nura-events"
 
-// Re-export core types
 export type {
   NuraAction,
   NuraConfig,

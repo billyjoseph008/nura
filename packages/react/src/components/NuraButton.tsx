@@ -17,7 +17,6 @@ export const NuraButton = forwardRef<HTMLButtonElement, NuraButtonProps>(
       meta,
     })
 
-    // Merge refs
     const mergedRef = (node: HTMLButtonElement | null) => {
       if (internalRef) {
         ;(internalRef as any).current = node

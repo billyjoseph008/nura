@@ -36,7 +36,6 @@ export function scanDOM(root: HTMLElement = document.body): ScanResult {
 
     if (elementVerbs.length === 0) return
 
-    // Parse metadata
     let metadata: Record<string, any> = {}
     const metaAttr = element.getAttribute("data-nu-meta")
     if (metaAttr) {

@@ -365,7 +365,6 @@ function scoreByStrategy(
     }
   }
 
-  // hybrid
   const base = Math.max(editScore, phoneticScore)
   const hybridScore = Math.min(1, base + prefixBonus)
   const via: 'phonetic' | 'edit' = phoneticScore >= editScore ? 'phonetic' : 'edit'

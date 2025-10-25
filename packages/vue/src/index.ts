@@ -102,17 +102,14 @@ export function withVue(nura: Nura) {
 
       app.directive('nu-listen', {
         mounted(el: HTMLElement, binding: DirectiveBinding) {
-          // marca de escucha
           el.setAttribute('data-nu-listen', 'dom')
           if (binding.modifiers.soft) el.setAttribute('data-nu-priority', 'soft')
           if (binding.modifiers.deep) el.setAttribute('data-nu-priority', 'hard')
           if (binding.arg === 'scope') el.setAttribute('data-nu-scope', String(binding.value))
         },
         updated() {
-          // noop: nada pesado por ahora
         },
         unmounted() {
-          // limpieza si fuera necesaria
         }
       })
 

@@ -19,24 +19,20 @@ export function useNuraElement<T extends HTMLElement = HTMLElement>(options: Use
 
     const element = ref.current
 
-    // Set scope
     element.setAttribute("data-nu-scope", scope)
 
-    // Set listen verbs
     if (listen.length > 0) {
       element.setAttribute("data-nu-listen", listen.join(" "))
     } else {
       element.removeAttribute("data-nu-listen")
     }
 
-    // Set act verbs
     if (act.length > 0) {
       element.setAttribute("data-nu-act", act.join(" "))
     } else {
       element.removeAttribute("data-nu-act")
     }
 
-    // Set metadata
     if (meta && Object.keys(meta).length > 0) {
       element.setAttribute("data-nu-meta", JSON.stringify(meta))
     } else {

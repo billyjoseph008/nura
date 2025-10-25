@@ -10,7 +10,6 @@ export const NuraElement = forwardRef<HTMLElement, NuraElementProps>(
   ({ as: Component = "div", scope, listen, act, meta, children, ...props }, externalRef) => {
     const internalRef = useNuraElement({ scope, listen, act, meta })
 
-    // Merge refs
     const mergedRef = (node: HTMLElement | null) => {
       if (internalRef) {
         ;(internalRef as any).current = node

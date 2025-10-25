@@ -46,7 +46,6 @@ export function useNuraAction(options: UseNuraActionOptions) {
     unregister()
   })
 
-  // Watch for changes and re-register
   watch([verbRef, scopeRef, descriptionRef, metadataRef, enabledRef], () => {
     unregister()
     register()

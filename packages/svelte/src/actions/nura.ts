@@ -12,24 +12,20 @@ export const nura: Action<HTMLElement, NuraActionParams> = (node, params) => {
   const updateAttributes = (params: NuraActionParams) => {
     const { scope, listen = [], act = [], meta } = params
 
-    // Set scope
     node.setAttribute("data-nu-scope", scope)
 
-    // Set listen verbs
     if (listen.length > 0) {
       node.setAttribute("data-nu-listen", listen.join(" "))
     } else {
       node.removeAttribute("data-nu-listen")
     }
 
-    // Set act verbs
     if (act.length > 0) {
       node.setAttribute("data-nu-act", act.join(" "))
     } else {
       node.removeAttribute("data-nu-act")
     }
 
-    // Set metadata
     if (meta && Object.keys(meta).length > 0) {
       node.setAttribute("data-nu-meta", JSON.stringify(meta))
     } else {
