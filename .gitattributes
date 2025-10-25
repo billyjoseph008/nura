@@ -1,4 +1,9 @@
 * text=auto eol=lf
-
-*.ts diff=ts
+*.sh text eol=lf
+*.ps1 text eol=crlf
+*.md text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.js text eol=lf
+*.json text eol=lf
 docs/** linguist-documentation
