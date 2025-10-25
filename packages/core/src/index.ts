@@ -111,6 +111,11 @@ export * from './context'
 export * from './locale'
 export * from './numerals'
 export * from './synonyms'
+export {
+  collectCommandVariants,
+  collectEntityVariants,
+  collectWakeVariants,
+} from './registry'
 export type {
   NI18n,
   NI18nConfig,

@@ -1,1 +1,1 @@
-export declare function detectLocale(content: string, candidates: string[]): string
+export * from '../src/locale'

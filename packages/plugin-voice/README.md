@@ -1,83 +1,57 @@
 # @nura/plugin-voice
 
-> Voice command agent for Nura.js registries with wake-word detection and fuzzy matching.
+> Agente de voz para Nura.js con detección de wake-word, coincidencia difusa y anotación de intents.
 
-## Installation
+## Instalación
 
 ```bash
-pnpm add @nura/plugin-voice @nura/core
-# or
-yarn add @nura/plugin-voice @nura/core
+npm i @nura/plugin-voice
+# o
+pnpm add @nura/plugin-voice
 ```
 
-## Usage
+## Uso mínimo
 
 ```ts
+import { createRegistry, defineActionSpec } from '@nura/core'
 import { voiceAgent } from '@nura/plugin-voice'
-import { Nura, createRegistry } from '@nura/core'
 
 const registry = createRegistry({
-  config: { app: { id: 'demo-app' } },
+  actions: [
+    defineActionSpec({
+      name: 'open_orders',
+      type: 'open',
+      target: 'orders',
+      phrases: {
+        'es-CR': { canonical: ['abre órdenes'], wake: ['hey nura'] },
+      },
+    }),
+  ],
+  agents: [voiceAgent({ wakeWords: ['hey nura'] })],
 })
 
-const agent = voiceAgent({
-  wakeWords: ['hey nura'],
-  autoStart: true,
-})
-
-const nura = new Nura({ registry })
-await agent.start({
-  registry,
-  act: (action) => nura.act(action),
-  select: () => [],
-  i18n: registry.i18n,
-  lexicon: registry.lexicon,
+registry.agents.start('voice', {
+  locale: 'es-CR',
+  intents: registry.actions.intents(),
 })
 ```
 
-## API
+## APIs principales
 
-### `voiceAgent(options?)`
+* `voiceAgent` — Registra reconocimiento de voz y coordina intents para un `NRegistry`.
+* `matchUtterance` — Pipeline para puntuar intents según tokens, entidades y wake word.
+* `detectLocale` — Heurística simple para detectar locale a partir de la frase (re-exporta `@nura/core`).
+* `stripWake` — Normalizador de wake-word que limpia frases (re-exportado desde el core).
+* `compareWakeWord` — Comparador difuso de wake-word expuesto para integraciones personalizadas.
 
-Returns an `NAgent` compatible object that wires the Web Speech API to registry
-intents. It emits telemetry events under `voice.*` channels.
+## Tipos
 
-#### Options
+* `NVoiceOptions` — Configuración del agente (wake words, umbrales, modo dev).
+* `WakeWordInput` — Entrada normalizada para comparar wake words.
+* `NIntent` — Intent derivado del registro listo para reconocimiento.
+* `IntentMatchResult` — Resultado detallado de `matchUtterance` con puntuaciones y tokens.
 
-| Option | Type | Description |
-| --- | --- | --- |
-| `wakeWords` | `string[] \| WakeWordConfig[]` | Custom wake words with optional aliases and minimum confidence. |
-| `intents` | `NIntent[]` | Additional intents beyond those derived from registry specs. |
-| `language` | `string` | Explicit locale override for speech recognition. |
-| `keyWake` | `string` | Keyboard shortcut to open a dev prompt fallback. |
-| `autoStart` | `boolean` | Automatically call `start()` when the agent is initialised. |
-| `devMode` | `boolean` | Keeps matched actions from executing and surfaces debug telemetry. |
+## Enlaces
 
-### Utility Exports
-
-- `matchUtterance(ctx, utterance, intents, options)` – fuzzy ranking pipeline
-  used internally; exposed for custom UIs.
-- `detectWake`, `normalizeWakeWords`, `stripWake` – wake word helpers.
-- `detectLocale(text, candidates)` – heuristically select the most likely
-  locale for an utterance.
-
-## Telemetry Events
-
-Key telemetry channels emitted during processing:
-
-- `voice.input` – raw transcription payload.
-- `voice.wake.fuzzy` – wake-word detection diagnostics.
-- `voice.locale.detected` – selected locale and candidates.
-- `voice.intents.derived` – count of intents derived from registry specs.
-- `voice.intent.selected` / `voice.intent.rejected` – match outcomes.
-
-## Dependencies
-
-- Internal: `@nura/core`, `@nura/plugin-fuzzy`.
-- External: Web Speech API (browser environments), falls back to prompt-based
-  mock in development.
-
-## Status
-
-**Experimental.** APIs and heuristics may change prior to v1.0. See the global
-[`CHANGELOG.md`](../../CHANGELOG.md) for updates.
+* Repo: [https://github.com/nura-dev/nura](https://github.com/nura-dev/nura)
+* Issues: [https://github.com/nura-dev/nura/issues](https://github.com/nura-dev/nura/issues)

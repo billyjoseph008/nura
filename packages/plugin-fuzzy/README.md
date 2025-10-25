@@ -1,58 +1,43 @@
 # @nura/plugin-fuzzy
 
-> Locale-aware fuzzy string utilities used across the Nura.js ecosystem.
+> Utilidades de coincidencia difusa, fonética y tokenizada utilizadas por Nura.js y sus plugins de voz.
 
-## Installation
+## Instalación
 
 ```bash
+npm i @nura/plugin-fuzzy
+# o
 pnpm add @nura/plugin-fuzzy
-# or
-yarn add @nura/plugin-fuzzy
 ```
 
-## Usage
+## Uso mínimo
 
 ```ts
-import { matchFuzzy } from '@nura/plugin-fuzzy'
+import { matchFuzzy, tokenizeAndScore, compareWakeWord } from '@nura/plugin-fuzzy'
 
-const result = matchFuzzy('open the cart', ['open the cart', 'close the cart'])
+const brands = ['Nura', 'Núria', 'Nero']
+const match = matchFuzzy('nura', brands, { locale: 'es' })
 
-console.log(result)
-// { value: 'open the cart', score: 1, strategy: 'hybrid', matchedTokens: [...] }
+const tokens = tokenizeAndScore('abre el modo noche', ['modo noche', 'modo día'])
+
+const wake = compareWakeWord('hey nura', { canonical: 'hey nura', aliases: ['hola nura'] })
 ```
 
-## API
+## APIs principales
 
-### `matchFuzzy(input, candidates, options?)`
+* `matchFuzzy` — Puntúa candidatos y devuelve la mejor coincidencia según la estrategia seleccionada.
+* `tokenizeAndScore` — Evalúa token por token contra una lista de candidatos y devuelve los mejores empates.
+* `compareWakeWord` — Compara entradas de audio/texto contra palabras de activación canonizadas.
+* `damerauLevenshteinSimilarity` — Similaridad basada en ediciones transpuestas.
 
-Returns the best `MatchResult` using Damerau–Levenshtein distance combined with
-phonetic heuristics.
+## Tipos
 
-- `input`: Raw string to match.
-- `candidates`: Array of strings to compare against.
-- `options.strategy`: `'damerau' | 'soundex' | 'double-metaphone' | 'hybrid'`.
-- `options.minConfidence`: Minimum score (0–1) required for a match.
-- `options.locale`: `'es' | 'en'` locale hint for phonetic hashing.
+* `FuzzyMatchOpts` — Opciones de estrategia, locale y umbrales.
+* `MatchResult` — Resultado de `matchFuzzy` con estrategia y tokens coincidentes.
+* `TokenScore` — Resultado granular por token utilizado en `tokenizeAndScore`.
+* `FuzzyStrategy` — Estrategias disponibles (`'hybrid'`, `'damerau'`, ...).
 
-### Lower-Level Helpers
+## Enlaces
 
-- `damerauLevenshteinSimilarity(a, b)` – normalized distance metric.
-- `compareWakeWord(input, wake, options)` – evaluate wake phrases with
-  phonetic and edit distance checks.
-- `tokenizeAndScore(input, candidates, options)` – produce per-token scores for
-  downstream ranking.
-- `soundexLikeEsEn(value, locale)` – phonetic hashing tuned for Spanish/English.
-- `doubleMetaphoneLite(value, locale)` – simplified metaphone variant.
-
-All helpers are tree-shakeable and ship TypeScript definitions alongside the ESM
-bundle.
-
-## Dependencies
-
-- Internal: none.
-- External: none (pure TypeScript implementation).
-
-## Status
-
-**Stable.** Algorithms are covered by unit tests and changes follow semver in
-[`CHANGELOG.md`](../../CHANGELOG.md).
+* Repo: [https://github.com/nura-dev/nura](https://github.com/nura-dev/nura)
+* Issues: [https://github.com/nura-dev/nura/issues](https://github.com/nura-dev/nura/issues)

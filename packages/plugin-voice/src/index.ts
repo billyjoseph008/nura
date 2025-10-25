@@ -1,5 +1,5 @@
-import type { NActionSpecMeta } from '@nura/core'
 import type {
+  NActionSpecMeta,
   NAgent,
   NContext,
   NActionSpec,
@@ -7,22 +7,20 @@ import type {
   NLocale,
   NAction,
   ModernNAction,
+  NI18n,
+  NLexicon,
 } from '@nura/core'
 import {
+  collectCommandVariants,
+  collectEntityVariants,
+  collectWakeVariants,
   parseBoolean,
   parseDate,
   parseEnum,
   parseNumber,
   parseRangeNumber,
-} from '@nura/core/entities'
-import type { NI18n } from '@nura/core/i18n'
-import type { NLexicon } from '@nura/core/lexicon'
-import {
-  collectCommandVariants,
-  collectEntityVariants,
-  collectWakeVariants,
-} from '@nura/core/registry'
-import { toNumberLoose } from '@nura/core/nlp/numerals'
+} from '@nura/core'
+import { toNumberLoose } from '@nura/core/numerals'
 
 import { matchUtterance } from './matchUtterance'
 import { normalizeUtterance } from './text'
