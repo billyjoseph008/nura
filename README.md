@@ -15,22 +15,22 @@
 - **DX-Focused** – Strict TypeScript, SOLID-friendly architecture, and ergonomic developer tools.
 - **Accessible by Design** – Encourages ARIA-aligned semantics and inclusive interactions.
 
-## 🚀 Install in 60 Seconds
+## 🏁 Quick start
 
-Pick your package manager:
+Install dependencies and bootstrap the workspace with [pnpm](https://pnpm.io/):
 
 ```bash
-# pnpm
-pnpm add @nura/core
-
-# npm
-npm install @nura/core
-
-# bun
-bun add @nura/core
+pnpm install
+pnpm run smoke
 ```
 
-### Hello Nura (React)
+You can add Nura to any app directly:
+
+```bash
+pnpm add @nura/core
+```
+
+Looking for a React starter? Check [`packages/examples`](./packages/examples) for working sandboxes or plug the core package into your own stack:
 
 ```tsx
 import { NuraProvider, useNuraCommand } from '@nura/react'
@@ -49,6 +49,41 @@ function App() {
 ```
 
 More examples and framework-specific guides live in [`docs/tutorials/recipes.md`](./docs/tutorials/recipes.md).
+
+## 🛠️ Build & Typecheck
+
+The monorepo uses workspace scripts to ensure packages stay in sync:
+
+```bash
+pnpm -w run typecheck
+pnpm -w run build
+```
+
+Run these commands from the repository root. Each package also exposes `pnpm run build` and `pnpm run typecheck` for package-scoped checks.
+
+## ✅ verify:release
+
+Before publishing, validate bundles and smoke tests with:
+
+```bash
+pnpm run verify:release
+```
+
+This command performs a workspace typecheck, builds distributable artifacts, packs all publishable packages (excluding private ones), and runs end-to-end smoke checks.
+
+## 🗂️ Monorepo layout
+
+```
+apps/                # Playground and integration apps
+packages/core        # Core runtime and metadata contracts
+packages/dom         # DOM indexer and document scanning utilities
+packages/plugin-*    # Official plugins (voice, fuzzy matching, ...)
+packages/react|vue|svelte
+packages/examples    # Private examples for demos and tutorials
+packages/devtools-*  # Private developer tooling
+docs/                # Guides, tutorials, and API docs
+scripts/             # Repository maintenance utilities
+```
 
 ## ✅ Compatibility
 
@@ -87,7 +122,7 @@ pnpm run build:docs
 
 ## 🧑‍💻 Contributing
 
-We welcome contributions! Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for branch strategy, Conventional Commits, and local development instructions. Issues and feature ideas should start with a Discussion or issue using our templates.
+We welcome contributions! Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for branch strategy, Conventional Commits, and local development instructions, and review our [Code of Conduct](./CODE_OF_CONDUCT.md) to help keep the community safe and inclusive. Issues and feature ideas should start with a Discussion or issue using our templates.
 
 ## 🔐 Security
 
