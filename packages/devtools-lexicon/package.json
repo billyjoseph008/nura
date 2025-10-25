@@ -1,6 +1,7 @@
 {
   "name": "@nura/devtools-lexicon",
   "version": "0.1.0",
+  "private": true,
   "description": "Developer overlay and lexicon visualization tools for Nura.js",
   "type": "module",
   "license": "MIT",

@@ -1,1 +1,1 @@
-export declare function parseNumeral(token: string, locale: string): number
+export * from '../src/numerals'

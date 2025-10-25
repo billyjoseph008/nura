@@ -48,47 +48,17 @@
       "types": "./dist/synonyms.d.ts"
     },
     "./entities": {
-      "import": "./dist/entities.js",
-      "require": "./dist/entities.cjs",
-      "types": "./dist/entities.d.ts"
-    },
-    "./i18n": {
-      "import": "./dist/i18n.js",
-      "require": "./dist/i18n.cjs",
-      "types": "./dist/i18n.d.ts"
-    },
-    "./lexicon": {
-      "import": "./dist/lexicon.js",
-      "require": "./dist/lexicon.cjs",
-      "types": "./dist/lexicon.d.ts"
-    },
-    "./registry": {
-      "import": "./dist/registry.js",
-      "require": "./dist/registry.cjs",
-      "types": "./dist/registry.d.ts"
-    },
-    "./nlp/numerals": {
-      "import": "./dist/nlp/numerals.js",
-      "require": "./dist/nlp/numerals.cjs",
-      "types": "./dist/nlp/numerals.d.ts"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
     }
   },
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "sideEffects": false,
-  "typesVersions": {
-    "*": {
-      "entities": ["types/entities.d.ts"],
-      "i18n": ["types/i18n.d.ts"],
-      "lexicon": ["types/lexicon.d.ts"],
-      "registry": ["types/registry.d.ts"],
-      "wake": ["types/wake.d.ts"],
-      "context": ["types/context.d.ts"],
-      "locale": ["types/locale.d.ts"],
-      "numerals": ["types/numerals.d.ts"],
-      "synonyms": ["types/synonyms.d.ts"],
-      "nlp/*": ["types/nlp/*"]
-    }
-  },
   "scripts": {
     "build": "tsup --config tsup.config.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
@@ -106,5 +76,9 @@
   "dependencies": {
     "@nura/plugin-fuzzy": "workspace:*",
     "tslib": "^2.6.2"
-  }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "Nura Dev Team"
 }

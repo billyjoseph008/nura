@@ -23,14 +23,27 @@
       "types": "./dist/index.d.ts"
     }
   },
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "sideEffects": false,
   "scripts": {
     "build": "tsup src/index.ts --dts --format esm,cjs --treeshake --clean",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
+  "keywords": [
+    "nura",
+    "fuzzy",
+    "matching"
+  ],
   "devDependencies": {
     "tsup": "^8.5.0",
     "typescript": "^5.4.0"
-  }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "Nura Dev Team"
 }

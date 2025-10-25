@@ -1,75 +1,64 @@
 # @nura/vue
 
-> Official Vue 3 adapter for rendering Nura.js metadata and wiring runtime actions.
+> Adaptador oficial de Vue 3 para exponer directivas y provide/inject del runtime de Nura.js.
 
-## Installation
+## Instalación
 
 ```bash
-pnpm add @nura/vue @nura/core vue
-# or
-yarn add @nura/vue @nura/core vue
+npm i @nura/vue
+# o
+pnpm add @nura/vue
 ```
 
-## Quick Start
+## Uso mínimo
 
 ```ts
 import { createApp } from 'vue'
-import App from './App.vue'
-import { createRegistry, Nura } from '@nura/core'
+import { Nura, createRegistry, defineActionSpec } from '@nura/core'
 import { withVue } from '@nura/vue'
+import App from './App.vue'
 
 const registry = createRegistry({
-  config: { app: { id: 'demo-nura' } },
+  actions: [defineActionSpec({ name: 'open_orders', type: 'open', target: 'orders' })],
 })
 
 const nura = new Nura({ registry })
-const app = createApp(App)
 
-withVue(nura).install(app)
-nura.start()
-
-app.mount('#app')
+createApp(App)
+  .use(withVue(nura))
+  .mount('#app')
 ```
 
-## API Surface
+```vue
+<template>
+  <button v-nu-act="action" v-nu-listen="'open'" data-nu-scope="orders">
+    Abrir órdenes
+  </button>
+</template>
 
-### `withVue(nura)`
+<script setup lang="ts">
+import { inject } from 'vue'
+import { NURA_KEY } from '@nura/vue'
 
-Returns an installer with:
+const nura = inject(NURA_KEY)
+const action = nura?.registry.actions.find('open_orders')
+</script>
+```
 
-- `install(app)` – provides the `Nura` instance to the Vue app and registers
-  directives/components.
-- `directive` – access to the raw `v-nu-act` directive for manual registration.
-- `plugin` – Vue plugin reference usable with `app.use(...)`.
+## APIs principales
 
-### Directives
+* `withVue` — Plugin que registra directivas `v-nu-*` y expone el runtime vía provide/inject.
+* `NURA_KEY` — Clave de inyección para recuperar la instancia de `Nura`.
+* `nu-act` — Directiva que serializa acciones en atributos `data-nu-act` y maneja clicks.
+* `nu-listen` — Directiva para marcar scopes y prioridades de escucha en el DOM.
 
-- `v-nu-act="action"` – serialises an `NAction` into `data-nu-act`, attaches
-  accessible descriptions, and triggers `nura.act(...)` on interaction.
-- `v-nu-listen` – marks DOM sections to be indexed by the registry.
-  - Modifiers: `.soft`, `.deep` map to priority hints.
-  - Argument: `v-nu-listen:scope="'ui'"` sets the scope metadata.
+## Tipos
 
-### Composables
+* `GuardBinding` — Configuración para la directiva de guardia de permisos.
+* `InjectionKey<Nura>` — Tipo de la clave `NURA_KEY` para TypeScript.
+* `NuActElement` — Elemento extendido que gestiona metadata de acciones.
 
-- `useNura()` – injects the active `Nura` instance.
-- `useNuraAction(action)` – builds a reactive action executor.
-- `useNuraElement(options)` – registers components within the semantic graph.
-- `useNuraEvents(event, handler)` – subscribe to registry events.
-- `useNuraPermission(verb, scope)` – computes permission state for UI hints.
+## Enlaces
 
-## Configuration
-
-The package ships strict TypeScript definitions, Vue-specific directive typings,
-and Rollup-based ESM builds with source maps. See `tsconfig.build.json` for
-compiler flags.
-
-## Dependencies
-
-- Internal: `@nura/core`.
-- Peer: Vue 3 (`>=3.3.0`).
-
-## Status
-
-**Experimental.** The adapter stabilises alongside the core runtime. Monitor the
-root [`CHANGELOG.md`](../../CHANGELOG.md) for updates.
+* Repo: [https://github.com/nura-dev/nura](https://github.com/nura-dev/nura)
+* Issues: [https://github.com/nura-dev/nura/issues](https://github.com/nura-dev/nura/issues)

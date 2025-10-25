@@ -7,3 +7,5 @@ export function parseNumeral(token: string, locale: string): number {
   if (locale.startsWith('en') && t in en) return en[t as keyof typeof en]
   return Number.NaN
 }
+
+export { toNumberLoose } from './nlp/numerals'

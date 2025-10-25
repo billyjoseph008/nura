@@ -3,12 +3,7 @@ import {
   tokenizeAndScore,
   type TokenScore,
 } from '@nura/plugin-fuzzy'
-import {
-  parseBoolean,
-  parseDate,
-  parseRangeNumber,
-  parseNumber,
-} from '@nura/core/entities'
+import { parseBoolean, parseDate, parseNumber, parseRangeNumber } from '@nura/core'
 import type { NActionSpecMeta } from '@nura/core'
 import type {
   ModernNAction,
@@ -17,7 +12,7 @@ import type {
   NEntityDef,
   NLocale,
 } from '@nura/core'
-import { toNumberLoose } from '@nura/core/nlp/numerals'
+import { toNumberLoose } from '@nura/core/numerals'
 
 import type {
   IntentMatchResult,

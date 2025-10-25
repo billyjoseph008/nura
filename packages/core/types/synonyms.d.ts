@@ -1,1 +1,1 @@
-export declare function normalizeSynonyms(s: string, locale: string): string
+export * from '../src/synonyms'

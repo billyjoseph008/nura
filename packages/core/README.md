@@ -1,104 +1,74 @@
 # @nura/core
 
-> Core runtime for building AI-friendly command layers with Nura.js.
+> Núcleo de Nura.js con runtime, entidades y utilidades lingüísticas para interfaces guiadas por agentes.
 
-## Installation
+## Instalación
 
 ```bash
+npm i @nura/core
+# o
 pnpm add @nura/core
-# or
-npm install @nura/core
 ```
 
-## Quick Start
+## Uso mínimo
 
 ```ts
-import { Nura, createRegistry } from '@nura/core'
+import {
+  Nura,
+  ContextManager,
+  createRegistry,
+  defineActionSpec,
+  stripWake,
+  detectLocale,
+  parseNumeral,
+  normalizeSynonyms,
+} from '@nura/core'
 
 const registry = createRegistry({
-  config: {
-    app: { id: 'demo-app' },
-    actor: () => ({ id: 'user-123', roles: ['user'] }),
-  },
+  actions: [
+    defineActionSpec({
+      name: 'open_orders',
+      type: 'open',
+      target: 'orders',
+      phrases: {
+        'es-CR': { canonical: ['abre órdenes'] },
+      },
+    }),
+  ],
 })
 
 const nura = new Nura({ registry })
 
-await nura.act({
-  type: 'open',
-  target: 'cart',
-  payload: { mode: 'drawer' },
-})
+const context = new ContextManager({ locale: 'es-CR' })
+context.set('customerId', 42)
+
+const input = 'hey nura abre órdenes'
+const withoutWake = stripWake(input, { wakeWords: ['hey nura'] })
+const locale = detectLocale(withoutWake, ['es-CR', 'en-US'])
+const amount = parseNumeral('quince', locale)
+const normalized = normalizeSynonyms('Árbol', locale)
+
+await nura.act({ type: 'open', target: 'orders', meta: { desc: `Abrir ${normalized}` } })
 ```
 
-## Public API
+## APIs principales
 
-### `createRegistry(options)`
+* `Nura` — Orquesta ejecución de acciones registradas con permisos y telemetría.
+* `createRegistry` — Construye un registro con acciones, entidades y agentes conectados.
+* `ContextManager` — Administra contexto conversacional (locale, sesión, atributos).
+* `stripWake` — Limpia frases detectando palabras de activación configuradas.
+* `detectLocale` — Determina el locale más probable a partir de un texto.
+* `parseNumeral` — Convierte tokens numéricos en valores `number`.
+* `normalizeSynonyms` — Normaliza sinónimos para búsquedas y coincidencias.
 
-Creates an `NRegistry` instance with action dispatching, permission checks, i18n,
-telemetry, and lexicon helpers.
+## Tipos
 
-```ts
-const registry = createRegistry({
-  config: {
-    app: { id: 'demo-app', locale: 'en-US' },
-    resolveScope: (action) => action.target,
-  },
-  specs: [
-    {
-      name: 'open-cart',
-      type: 'open',
-      target: 'cart',
-      phrases: {
-        'en-US': { canonical: ['open the cart'] },
-      },
-    },
-  ],
-})
-```
+* `NAction` — Representa una acción ejecutable por el runtime.
+* `NRegistry` — Registro central con acciones, plugins y permisos.
+* `NLocale` — Identificador de locale BCP 47 (`'es-CR'`, `'en-US'`, ...).
+* `NAgent` — Plugin que aporta capacidades adicionales al registro.
 
-#### Options
+## Enlaces
 
-- `config`: Partial `NConfig` describing the host application (actor factory,
-  capabilities, confirmation override, scope resolution).
-- `permissions`: Pre-seeded permission matrix for the registry.
-- `actionCatalog`: Seeded action catalog implementation, defaults to
-  `createActionCatalog()`.
-- `routes`: Map of legacy action verbs to handler functions.
-- `specs`: Array of `NActionSpec` for semantic command derivation.
-- `i18n`: Subset of `NI18nConfig` to seed bundles and detection logic.
-- `seedLexicon`: Locale-specific term mappings for the built-in lexicon.
-
-### `new Nura({ registry })`
-
-The façade for executing actions while enforcing permission rules and emitting
-telemetry events. Provides:
-
-- `start()` – Idempotent initialization hook that emits a global
-  `nura:started` event for host environments.
-- `act(action)` – Runs an action via the registry dispatcher and returns an
-  `NResult` indicating success/failure.
-
-### Helpers
-
-- `createActionCatalog(initialHandlers?, specs?)`
-- `defineActionSpec(spec)` – identity helper for spec authoring.
-- `createI18n(config)` – strict locale store with telemetry hooks.
-- `createLexicon(telemetry?)` – locale-aware lexicon with phonetic lookups.
-- `createTelemetry()` – fan-out emitter for observability pipelines.
-
-## Configuration & Typings
-
-`tsconfig.build.json` ships strict compiler options with `declarationMap`
-outputs. Tree-shakeable ESM bundles are emitted via Rollup, with type definitions
-co-located under `dist/`.
-
-## Dependencies
-
-- Internal: `@nura/plugin-fuzzy` (semantic search helpers).
-- Peer: none.
-
-## Status
-
-**Experimental.** APIs may evolve prior to v1.0. Track changes in the root
-[`CHANGELOG.md`](../../CHANGELOG.md).
+* Repo: [https://github.com/nura-dev/nura](https://github.com/nura-dev/nura)
+* Issues: [https://github.com/nura-dev/nura/issues](https://github.com/nura-dev/nura/issues)

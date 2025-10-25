@@ -1,98 +1,57 @@
 # @nura/react
 
-React adapter for Nura.js - Make your React apps AI-friendly.
+> Adaptador oficial de React para consumir el runtime de Nura.js con hooks y componentes declarativos.
 
-## Installation
+## Instalación
 
-\`\`\`bash
-npm install @nura/react @nura/core @nura/dom
-# or
-pnpm add @nura/react @nura/core @nura/dom
-\`\`\`
+```bash
+npm i @nura/react
+# o
+pnpm add @nura/react
+```
 
-## Usage
+## Uso mínimo
 
-### Setup Provider
+```tsx
+import { createRegistry } from '@nura/core'
+import { NuraProvider, useNuraAction } from '@nura/react'
 
-\`\`\`tsx
-import { NuraProvider } from '@nura/react'
+const registry = createRegistry({ /* acciones y plugins */ })
 
 function App() {
   return (
-    <NuraProvider config={{ debug: true }}>
-      <YourApp />
+    <NuraProvider registry={registry}>
+      <OrdersButton />
     </NuraProvider>
   )
 }
-\`\`\`
 
-### Register Actions
-
-\`\`\`tsx
-import { useNuraAction } from '@nura/react'
-
-function MyComponent() {
-  useNuraAction({
-    verb: 'open',
-    scope: 'modal',
-    handler: () => {
-      console.log('Opening modal')
-    }
-  })
-
-  return <div>My Component</div>
-}
-\`\`\`
-
-### Mark Elements
-
-\`\`\`tsx
-import { useNuraElement } from '@nura/react'
-
-function Button() {
-  const ref = useNuraElement<HTMLButtonElement>({
-    scope: 'submit-button',
-    act: ['click', 'submit']
-  })
-
-  return <button ref={ref}>Submit</button>
-}
-\`\`\`
-
-### Use Components
-
-\`\`\`tsx
-import { NuraElement, NuraButton } from '@nura/react'
-
-function Form() {
+function OrdersButton() {
+  const action = useNuraAction('open_orders')
   return (
-    <NuraElement scope="form" listen={['submit']}>
-      <NuraButton scope="submit-button">
-        Submit
-      </NuraButton>
-    </NuraElement>
+    <button onClick={() => action?.run?.()} data-nu-act={JSON.stringify(action?.spec)}>
+      Abrir órdenes
+    </button>
   )
 }
-\`\`\`
+```
 
-## API
+## APIs principales
 
-### Hooks
+* `NuraProvider` — Inyecta el registro de Nura en el árbol de React.
+* `useNura` — Devuelve el runtime `Nura` y helpers para disparar acciones.
+* `useNuraAction` — Resuelve una acción por nombre y expone métodos de ejecución.
+* `useNuraPermission` — Comprueba permisos declarativos en componentes.
+* `NuraElement` — Componente helper que serializa acciones y atributos `data-nu-*`.
 
-- \`useNura()\` - Access registry and indexer
-- \`useNuraAction(options)\` - Register actions
-- \`useNuraElement(options)\` - Mark elements with Nura attributes
-- \`useNuraPermission(options)\` - Add permissions
-- \`useHasPermission(verb, scope)\` - Check permissions
-- \`useNuraEvent(type, listener)\` - Listen to Nura events
+## Tipos
 
-### Components
+* `NuraProviderProps` — Props del provider con registro y opciones de contexto.
+* `UseNuraReturn` — Resultado del hook `useNura` con runtime y registro.
+* `UseNuraActionOptions` — Opciones para `useNuraAction` (scope, argumentos, etc.).
+* `NuraElementProps` — Props del wrapper que sincroniza atributos accesibles.
 
-- \`<NuraProvider>\` - Context provider
-- \`<NuraElement>\` - Generic element wrapper
-- \`<NuraButton>\` - Button with Nura attributes
+## Enlaces
 
-## License
-
-MIT
-\`\`\`
+* Repo: [https://github.com/nura-dev/nura](https://github.com/nura-dev/nura)
+* Issues: [https://github.com/nura-dev/nura/issues](https://github.com/nura-dev/nura/issues)
