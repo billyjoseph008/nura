@@ -27,16 +27,12 @@ export const NuraPlugin = {
       indexer,
     }
 
-    // Provide globally
     app.provide(NuraSymbol, nuraInstance)
 
-    // Add global properties
     app.config.globalProperties.$nura = nuraInstance
 
-    // Cleanup on unmount
     app.mixin({
       beforeUnmount() {
-        // Only destroy on root component
         if (this === this.$root) {
           indexer.destroy()
         }

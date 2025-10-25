@@ -1,8 +1,6 @@
-// Context and Provider
 export { NuraProvider, useNuraContext } from "./context"
 export type { NuraProviderProps } from "./context"
 
-// Hooks
 export { useNura } from "./use-nura"
 export type { UseNuraReturn } from "./use-nura"
 
@@ -17,14 +15,12 @@ export type { UseNuraPermissionOptions } from "./use-nura-permission"
 
 export { useNuraEvent, useNuraEvents } from "./use-nura-events"
 
-// Components
 export { NuraElement } from "./components/NuraElement"
 export type { NuraElementProps } from "./components/NuraElement"
 
 export { NuraButton } from "./components/NuraButton"
 export type { NuraButtonProps } from "./components/NuraButton"
 
-// Re-export core types
 export type {
   NuraAction,
   NuraConfig,

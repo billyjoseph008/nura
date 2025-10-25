@@ -31,12 +31,10 @@ export class DOMIndexer {
   }
 
   private generateId(element: HTMLElement): string {
-    // Use existing ID or generate one
     if (element.id) {
       return element.id
     }
 
-    // Generate ID based on scope and position
     const scope = element.getAttribute("data-nu-scope") || "unknown"
     const timestamp = Date.now()
     const random = Math.random().toString(36).substring(2, 9)
@@ -61,7 +59,6 @@ export class DOMIndexer {
 
     const id = this.generateId(element)
 
-    // Parse metadata from data-nu-meta
     let metadata: Record<string, any> = {}
     const metaAttr = element.getAttribute("data-nu-meta")
     if (metaAttr) {
@@ -88,7 +85,6 @@ export class DOMIndexer {
     const scanRoot = root || this.root
     const indexed: NuraElement[] = []
 
-    // Find all elements with data-nu-scope
     const elements = scanRoot.querySelectorAll("[data-nu-scope]")
 
     elements.forEach((element) => {
@@ -125,19 +121,16 @@ export class DOMIndexer {
 
     this.observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
-        // Handle added nodes
         mutation.addedNodes.forEach((node) => {
           if (node.nodeType === Node.ELEMENT_NODE) {
             const element = node as HTMLElement
             if (element.hasAttribute("data-nu-scope")) {
               this.indexElement(element)
             }
-            // Scan children
             this.scan(element)
           }
         })
 
-        // Handle removed nodes
         mutation.removedNodes.forEach((node) => {
           if (node.nodeType === Node.ELEMENT_NODE) {
             const element = node as HTMLElement
@@ -148,7 +141,6 @@ export class DOMIndexer {
           }
         })
 
-        // Handle attribute changes
         if (mutation.type === "attributes" && mutation.target.nodeType === Node.ELEMENT_NODE) {
           const element = mutation.target as HTMLElement
           if (element.hasAttribute("data-nu-scope")) {

@@ -23,10 +23,8 @@ export function useNuraElement<T extends HTMLElement = HTMLElement>(
 
     const element = elementRef.value
 
-    // Set scope
     element.setAttribute("data-nu-scope", scopeRef.value)
 
-    // Set listen verbs
     const listen = unref(listenRef) ?? []
     if (listen.length > 0) {
       element.setAttribute("data-nu-listen", listen.join(" "))
@@ -34,7 +32,6 @@ export function useNuraElement<T extends HTMLElement = HTMLElement>(
       element.removeAttribute("data-nu-listen")
     }
 
-    // Set act verbs
     const act = unref(actRef) ?? []
     if (act.length > 0) {
       element.setAttribute("data-nu-act", act.join(" "))
@@ -42,7 +39,6 @@ export function useNuraElement<T extends HTMLElement = HTMLElement>(
       element.removeAttribute("data-nu-act")
     }
 
-    // Set metadata
     const meta = unref(metaRef)
     if (meta && Object.keys(meta).length > 0) {
       element.setAttribute("data-nu-meta", JSON.stringify(meta))

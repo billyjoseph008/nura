@@ -13,7 +13,6 @@ export function createNuraStore() {
   const actions = writable<ActionSpecList>([])
   const elements = writable<NuraElement[]>([])
 
-  // Update actions when registry changes
   const updateActions = () => {
     actions.set(listSpecs())
   }
@@ -22,12 +21,10 @@ export function createNuraStore() {
 
   registry.on("action:unregistered", updateActions)
 
-  // Update elements when indexer changes
   const updateElements = () => {
     elements.set(indexer.getAll())
   }
 
-  // Initial load
   updateActions()
   updateElements()
 

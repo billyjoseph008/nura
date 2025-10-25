@@ -27,7 +27,6 @@ import { normalizeUtterance } from './text'
 import { detectWake, normalizeWakeWords, stripWake } from './wake'
 import type { NIntent, NVoiceOptions, WakeWordInput } from './types'
 
-// ---- Internal helpers ----
 type SpeechRecognitionResultAlternative = { transcript?: string }
 type SpeechRecognitionResult = ArrayLike<SpeechRecognitionResultAlternative>
 type NuraSpeechRecognitionEvent = {
@@ -302,12 +301,10 @@ function gatherWakeInputs(
   return inputs
 }
 
-// ---- Voice agent implementation ----
 export function voiceAgent(opts: NVoiceOptions = {}): NAgent {
   const explicitLocale = opts.language as NLocale | undefined
   const key = opts.keyWake ?? 'F2'
 
-  // Web Speech API (when available)
   function createRecognizer(ctx: NContext) {
     const speechWindow = getWindow()
     if (!speechWindow) return null
@@ -323,12 +320,8 @@ export function voiceAgent(opts: NVoiceOptions = {}): NAgent {
       const t = ev.results?.[0]?.[0]?.transcript ?? ''
       handleTranscript(t, ctx)
     }
-    rec.onerror = () => {
-      /* optional: add logging or retries here */
-    }
-    rec.onend = () => {
-      /* wait for next activation */
-    }
+    rec.onerror = () => undefined
+    rec.onend = () => undefined
     return rec
   }
 
@@ -420,16 +413,16 @@ export function voiceAgent(opts: NVoiceOptions = {}): NAgent {
       if (opts.autoStart && rec) {
         try {
           rec.start()
-        } catch {
-          // ignore startup errors
+        } catch (error) {
+          void error
         }
       }
     },
     stop() {
       try {
         rec?.stop()
-      } catch {
-        // ignore stop errors
+      } catch (error) {
+        void error
       }
       rec = null
     },

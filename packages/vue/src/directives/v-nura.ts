@@ -12,20 +12,16 @@ export const vNura: Directive<HTMLElement, VNuraBinding> = {
   mounted(el, binding) {
     const { scope, listen = [], act = [], meta } = binding.value
 
-    // Set scope
     el.setAttribute("data-nu-scope", scope)
 
-    // Set listen verbs
     if (listen.length > 0) {
       el.setAttribute("data-nu-listen", listen.join(" "))
     }
 
-    // Set act verbs
     if (act.length > 0) {
       el.setAttribute("data-nu-act", act.join(" "))
     }
 
-    // Set metadata
     if (meta && Object.keys(meta).length > 0) {
       el.setAttribute("data-nu-meta", JSON.stringify(meta))
     }
@@ -34,24 +30,20 @@ export const vNura: Directive<HTMLElement, VNuraBinding> = {
   updated(el, binding) {
     const { scope, listen = [], act = [], meta } = binding.value
 
-    // Update scope
     el.setAttribute("data-nu-scope", scope)
 
-    // Update listen verbs
     if (listen.length > 0) {
       el.setAttribute("data-nu-listen", listen.join(" "))
     } else {
       el.removeAttribute("data-nu-listen")
     }
 
-    // Update act verbs
     if (act.length > 0) {
       el.setAttribute("data-nu-act", act.join(" "))
     } else {
       el.removeAttribute("data-nu-act")
     }
 
-    // Update metadata
     if (meta && Object.keys(meta).length > 0) {
       el.setAttribute("data-nu-meta", JSON.stringify(meta))
     } else {
