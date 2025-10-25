@@ -23,7 +23,14 @@
     "typecheck:all": "pnpm -r run typecheck",
     "lint": "eslint .",
     "format:check": "prettier --check .",
-    "format:write": "prettier --write ."
+    "format:write": "prettier --write .",
+
+    "pack:clean": "rimraf .packs && mkdir .packs",
+    "pack:each": "pnpm -r --filter \"@nura/*\" --filter \"!@nura/examples\" --filter \"!@nura/devtools-lexicon\" --workspace-concurrency=1 exec -- pnpm pack --pack-destination ../../.packs",
+    "pack:ls": "node -e \"require('fs').readdirSync('.packs').forEach(f=>console.log(f))\"",
+
+    "smoke": "node scripts/smoke.mjs",
+    "verify:release": "pnpm -w run typecheck && pnpm -w run build && pnpm run pack:clean && pnpm run pack:each && pnpm run smoke"
   },
   "dependencies": {
     "@nura/core": "workspace:*",
