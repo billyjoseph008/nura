@@ -2,136 +2,229 @@
 
 [![CI](https://github.com/nura-dev/nura/actions/workflows/ci.yml/badge.svg)](https://github.com/nura-dev/nura/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/@nura/core?label=%40nura%2Fcore)](https://www.npmjs.com/package/@nura/core)
-[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-ffa500.svg)](https://www.conventionalcommits.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
 
-> **Make your app breathe.** Nura.js is a TypeScript-first framework for shipping AI-friendly, accessible, and automation-ready web experiences across frameworks.
+> **Make your app breathe.**  
+> Nura.js is a TypeScript-first framework that helps your **agents** and **UIs** talk to each other. It ships fuzzy and phonetic matching, wake-word helpers, simple i18n, lightweight context, and UI adapters for React, Vue, and Svelte.
 
-## ✨ Highlights
+---
 
-- **Semantic AI Layer** – Describe UI intent with structured metadata that agents and automation tools understand.
-- **Framework Adapters** – First-party packages for React, Vue, and Svelte built on a shared core.
-- **Voice & Multimodal Ready** – Optional voice plugin and lexicon tooling for natural language commands.
-- **DX-Focused** – Strict TypeScript, SOLID-friendly architecture, and ergonomic developer tools.
-- **Accessible by Design** – Encourages ARIA-aligned semantics and inclusive interactions.
+## ✨ Origin
 
-## 🏁 Quick start
+- Developer: **Billy Joseph Rojas Vindas** — Costa Rica.
+- Inspired by a trip to the **Republic of Tatarstan (Russia)**.
+- The name **“Nura”** blends **_nur_** (a “ray of light” in Tatar) and **_pneuma_** (“breath”). The idea: let your app **breathe**—be understandable for both people and agents.
 
-Install dependencies and bootstrap the workspace with [pnpm](https://pnpm.io/):
+---
+
+## 🌟 Highlights
+
+- **Agent-Friendly Semantics** – Describe intent and actions so tools/agents can cooperate with your UI.
+- **Fuzzy + Phonetic** – Damerau + soundex-style strategies to catch what users meant.
+- **Wake & Voice-Ready** – Wake-word helpers and voice plugin scaffolding.
+- **Context & i18n** – Natural confirmations (“yes, do it”), numeral parsing (ES/EN), and simple locale detection.
+- **UI Adapters** – First-party packages for **React**, **Vue**, and **Svelte**.
+
+---
+
+## 🚀 Quick Start
+
+```bash
+# core
+pnpm add @nura/core
+
+# optional plugins
+pnpm add @nura/plugin-voice @nura/plugin-fuzzy
+
+# pick a UI adapter (optional):
+pnpm add @nura/react   # or @nura/vue / @nura/svelte
+```
+
+Workspace bootstrap (if you cloned the monorepo):
 
 ```bash
 pnpm install
-pnpm run smoke
+pnpm run verify:release   # typecheck → build → pack → smoke tests
 ```
 
-You can add Nura to any app directly:
+---
 
-```bash
-pnpm add @nura/core
+## 🧩 Core in 60 seconds
+
+**Wake stripping + numerals + synonyms:**
+
+```ts
+import { stripWake } from '@nura/core/wake';
+import { parseNumeral } from '@nura/core/numerals';
+import { normalizeSynonyms } from '@nura/core/synonyms';
+
+const text = stripWake('ok nora open orders menu', {
+  aliases: ['nora', 'lura', 'nula'],
+  minConfidence: 0.7,
+});
+// → "open orders menu"
+
+const id = parseNumeral('quince', 'es'); // → 15
+const normalized = normalizeSynonyms('abre el menú de pedidos', 'es');
+// → normalizes "pedidos" to "ordenes" (per dictionary)
 ```
 
-Looking for a React starter? Check [`packages/examples`](./packages/examples) for working sandboxes or plug the core package into your own stack:
+**Context & confirmations:**
+
+```ts
+import { ContextManager } from '@nura/core/context';
+
+const ctx = new ContextManager();
+ctx.save({ type: 'delete', target: 'order', payload: { id: 15 } });
+
+// later…
+const next = ctx.maybeConfirm('sí, elimínala');
+// → { type: 'delete', target: 'order', payload: { id: 15 } } | null
+```
+
+---
+
+## 🎙️ Voice & Fuzzy (Plugins)
+
+**Wake check (voice):**
+
+```ts
+import { compareWakeWord } from '@nura/plugin-voice';
+
+const res = compareWakeWord(
+  'okey nuera',
+  { canonical: 'nura', aliases: ['nora', 'lura'] },
+  { strategy: 'hybrid', minConfidence: 0.7, locale: 'es' }
+);
+if (res && res.score >= 0.7) {
+  // wake matched, parse the rest of the utterance…
+}
+```
+
+**Fuzzy ranking (hybrid Damerau + phonetic):**
+
+```ts
+import { rankCandidates } from '@nura/plugin-fuzzy';
+
+const intents = [
+  { id: 'open::menu:orders', phrase: 'abre el menu de ordenes' },
+  { id: 'delete::order', phrase: 'borra la orden {id}' },
+];
+
+const { best } = rankCandidates('abre el menú de pedidos', intents, {
+  threshold: 0.8,
+  strategy: 'hybrid',
+});
+
+if (best?.score >= 0.8) {
+  // → open::menu:orders
+}
+```
+
+---
+
+## 🧱 UI Adapters
+
+**React**
 
 ```tsx
-import { NuraProvider, useNuraCommand } from '@nura/react'
+import { NuraProvider, useNuraCommand } from '@nura/react';
 
-function App() {
+export default function App() {
   useNuraCommand('open-cart', ({ context }) => {
-    console.log('Opening cart for', context.userId)
-  })
-
+    console.log('Opening cart for user', context?.userId);
+  });
   return (
     <NuraProvider>
       <button data-nura-command="open-cart">Open cart</button>
     </NuraProvider>
-  )
+  );
 }
 ```
 
-More examples and framework-specific guides live in [`docs/tutorials/recipes.md`](./docs/tutorials/recipes.md).
+**Vue**
 
-## 🛠️ Build & Typecheck
+```vue
+<script setup lang="ts">
+import { NuraProvider } from '@nura/vue';
+// Listens to data-nura-command="..." and provides helpers via provide/inject
+</script>
 
-The monorepo uses workspace scripts to ensure packages stay in sync:
+<template>
+  <NuraProvider>
+    <button data-nura-command="open-cart">Open cart</button>
+  </NuraProvider>
+</template>
+```
+
+**Svelte**
+
+```svelte
+<script lang="ts">
+  import { NuraProvider } from '@nura/svelte';
+</script>
+
+<NuraProvider>
+  <button data-nura-command="open-cart">Open cart</button>
+</NuraProvider>
+```
+
+---
+
+## 🛠️ Monorepo scripts (maintainers)
 
 ```bash
 pnpm -w run typecheck
 pnpm -w run build
+pnpm run verify:release   # typecheck → build → pack → smoke
 ```
 
-Run these commands from the repository root. Each package also exposes `pnpm run build` and `pnpm run typecheck` for package-scoped checks.
+---
 
-## ✅ verify:release
-
-Before publishing, validate bundles and smoke tests with:
-
-```bash
-pnpm run verify:release
-```
-
-This command performs a workspace typecheck, builds distributable artifacts, packs all publishable packages (excluding private ones), and runs end-to-end smoke checks.
-
-## 🗂️ Monorepo layout
+## 🗂️ Layout
 
 ```
-apps/                # Playground and integration apps
-packages/core        # Core runtime and metadata contracts
-packages/dom         # DOM indexer and document scanning utilities
-packages/plugin-*    # Official plugins (voice, fuzzy matching, ...)
+apps/                 # playgrounds and sandboxes (don’t block main CI)
+packages/core         # core runtime (wake, numerals, synonyms, context, i18n)
+packages/plugin-*     # voice, fuzzy
+packages/dom          # DOM helpers
 packages/react|vue|svelte
-packages/examples    # Private examples for demos and tutorials
-packages/devtools-*  # Private developer tooling
-docs/                # Guides, tutorials, and API docs
-scripts/             # Repository maintenance utilities
+scripts/              # smoke, maintenance, etc.
 ```
+
+---
 
 ## ✅ Compatibility
 
-- **Runtime:** Node.js 18.18+ (ESM only)
-- **Languages:** TypeScript 5.x with `strict` mode enabled
-- **Frameworks:** Core works with any DOM environment. Official adapters exist for React 18+/19, Vue 3, and Svelte 4/5.
+- **Runtime:** Node.js 18.18+
+- **TypeScript:** 5.x (`strict`)
+- **UI:** React 18/19, Vue 3, Svelte 4/5
 
-## 📚 Documentation
+---
 
-- [Official Documentation Site](https://docs.nura.dev)
-- [Getting Started](./docs/guide/getting-started.md)
-- [Architecture Overview](./docs/internals/architecture.md)
-- [Recipes & Examples](./docs/tutorials/recipes.md)
-- [Architecture Decision Records](./docs/adr)
+## 🤝 Contributing
 
-Generated API documentation (via TypeDoc) will be published under `docs/api/` during releases.
+- Conventional Commits encouraged
+- Local flow:
 
-Generate local API docs with:
+  ```bash
+  pnpm i
+  pnpm -w run typecheck
+  pnpm -w run build
+  pnpm run smoke
+  ```
 
-```bash
-pnpm run build:docs
-```
+- Please review **CONTRIBUTING.md** and our **CODE_OF_CONDUCT.md**.
 
-## Linter & Format
-
-- Lint: `pnpm run lint`
-- Fix: `pnpm run lint:fix`
-- Format: `pnpm run format`
-
-> Si aparece “ESLint couldn't find the plugin eslint-plugin-import”, asegúrate de que los plugins estén instalados **en el root** con `pnpm add -w -D eslint-plugin-import eslint-import-resolver-typescript`.
-
-## 🧭 Roadmap & Project Status
-
-- Project maturity: **Alpha** – APIs may change, feedback welcome.
-- See [`docs/community/roadmap.md`](./docs/community/roadmap.md) for quarterly goals including i18n, fuzzy matching, devtools, and framework adapters.
-
-## 🧑‍💻 Contributing
-
-We welcome contributions! Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for branch strategy, Conventional Commits, and local development instructions, and review our [Code of Conduct](./CODE_OF_CONDUCT.md) to help keep the community safe and inclusive. Issues and feature ideas should start with a Discussion or issue using our templates.
+---
 
 ## 🔐 Security
 
-Report vulnerabilities privately to [security@nura.dev](mailto:security@nura.dev). See [SECURITY.md](./SECURITY.md) for supported versions and disclosure timelines.
+Private reports: **[security@nura.dev](mailto:security@nura.dev)**
+See **SECURITY.md** for response times and disclosure policy.
 
-## 🤝 Support
-
-If you have questions, open a Discussion or issue. See [SUPPORT.md](./SUPPORT.md) for details.
+---
 
 ## 📄 License
 
-Released under the [MIT License](./LICENSE) © Nura.js Maintainers.
+[MIT](./LICENSE) © **Billy Joseph Rojas Vindas** — Costa Rica
