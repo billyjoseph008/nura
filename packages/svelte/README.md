@@ -1,52 +1,50 @@
 # @nura/svelte
 
-> Adaptador oficial de Svelte para inicializar Nura.js con stores, acciones y componentes listos para el DOM semántico.
+Official Svelte adapter that initializes Nura.js with stores, actions, and DOM-aware components.
 
-## Instalación
+## Installation
 
 ```bash
-npm i @nura/svelte
-# o
 pnpm add @nura/svelte
 ```
 
-## Uso mínimo
+## Usage Example
 
 ```svelte
 <script lang="ts">
-  import { initNura, NuraProvider, nuraAction } from '@nura/svelte'
-  import { defineActionSpec } from '@nura/core'
+  import { initNura, NuraProvider, nuraAction } from '@nura/svelte';
+  import { defineActionSpec } from '@nura/core';
 
   const { registry } = initNura({
     actions: [
       defineActionSpec({ name: 'open_orders', type: 'open', target: 'orders' }),
     ],
-  })
+  });
 </script>
 
 <NuraProvider {registry}>
   <button use:nuraAction={{ name: 'open_orders' }} data-nu-scope="orders">
-    Abrir órdenes
+    Open orders
   </button>
 </NuraProvider>
 ```
 
-## APIs principales
+## Key APIs
 
-* `initNura` — Crea el registro y deja el contexto disponible para el árbol de Svelte.
-* `NuraProvider` — Componente envoltorio que expone contexto y atributos `data-nu-*`.
-* `nura` — Acción para sincronizar atributos y telemetría de elementos interactivos.
-* `nuraAction` — Acción específica para registrar intents y ejecutar acciones.
-* `createNuraStore` — Store derivado con helpers para el runtime y permisos.
+- `initNura` creates the registry and shares context across the Svelte tree.
+- `NuraProvider` exposes context and `data-nu-*` helpers.
+- `nura` syncs interaction telemetry via a generic action.
+- `nuraAction` registers intents and executes actions from elements.
+- `createNuraStore` builds derived stores for runtime helpers and permissions.
 
-## Tipos
+## Type References
 
-* `NuraContext` — Objeto compartido con `registry` e indexer DOM.
-* `NuraActionParams` — Parámetros para la acción `nura` (scope, meta, etc.).
-* `UseNuraReturn` — Resultado helper para acceder al runtime desde scripts.
-* `UseNuraActionOptions` — Configuración para recuperar acciones reactivas.
+- `NuraContext` — shared context with registry and DOM indexer.
+- `NuraActionParams` — parameters for the `nura` action (scope, metadata, etc.).
+- `UseNuraReturn` — helper result for accessing the runtime in scripts.
+- `UseNuraActionOptions` — configuration for retrieving reactive actions.
 
-## Enlaces
+## Additional Resources
 
-* Repo: [https://github.com/nura-dev/nura](https://github.com/nura-dev/nura)
-* Issues: [https://github.com/nura-dev/nura/issues](https://github.com/nura-dev/nura/issues)
+- Repository: <https://github.com/nura-dev/nura>
+- Issues: <https://github.com/nura-dev/nura/issues>

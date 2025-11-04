@@ -1,3 +1,4 @@
-# Registro de cambios
+# Notas de versión (español)
 
-Consulta el historial completo en [CHANGELOG.md](../../changelog/index.md). Cada release documenta correcciones, características y notas de migración.
+Consulta el registro completo en inglés en [../../changelog/index.md](/changelog/index). La traducción se actualizará después de
+sincronizar los cambios recientes.

@@ -1,5 +1,7 @@
 # Nura API Reference (Generated)
 
-This directory contains the generated API documentation produced by TypeDoc. Run
-`pnpm exec typedoc --skipErrorChecking` to regenerate the HTML output when
-publishing new releases.
+This directory stores the generated TypeDoc output. Regenerate the HTML before publishing a release:
+
+```bash
+pnpm exec typedoc --skipErrorChecking
+```

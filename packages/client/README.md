@@ -1,6 +1,7 @@
 # @nura/client
 
-TypeScript SDK for interacting with the Nura intents HTTP API. Includes a minimal `AiClient` wrapper and a UI dispatcher to route `NIntentResult` payloads to UI handlers.
+TypeScript SDK for interacting with the Nura intents HTTP API. Includes a minimal `AiClient` wrapper and a UI dispatcher to route
+`NIntentResult` payloads to UI handlers.
 
 ## Installation
 
@@ -8,7 +9,7 @@ TypeScript SDK for interacting with the Nura intents HTTP API. Includes a minima
 pnpm add @nura/client
 ```
 
-## Usage
+## Usage Example
 
 ```ts
 import { AiClient, UiDispatcher } from '@nura/client';

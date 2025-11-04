@@ -5,8 +5,8 @@ Thanks for your interest in contributing! This guide explains how we collaborate
 ## Getting in Touch
 
 - **Bug reports & feature ideas**: Open an issue on GitHub using the appropriate template.
-- **Questions & support**: Start a discussion or join community channels listed in [SUPPORT.md](./SUPPORT.md).
-- **Security reports**: Follow the instructions in [SECURITY.md](./SECURITY.md).
+- **Questions & support**: Start a discussion or review [SUPPORT.md](../../SUPPORT.md).
+- **Security reports**: Follow the instructions in [SECURITY.md](./security.md).
 
 ## Project Workflow
 
@@ -90,4 +90,4 @@ We follow [Semantic Versioning](https://semver.org/) and publish releases using 
 2. The automated release workflow opens a release PR summarizing pending changes.
 3. Once approved, the release PR is merged and the workflow tags a new version and publishes to npm.
 
-Thanks for helping us make Nura.js better! ❤️
+Thanks for helping us make Nura.js better!

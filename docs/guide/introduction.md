@@ -2,68 +2,69 @@
 
 [![CI](https://github.com/nura-dev/nura/actions/workflows/ci.yml/badge.svg)](https://github.com/nura-dev/nura/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/@nura/core?label=%40nura%2Fcore)](https://www.npmjs.com/package/@nura/core)
-[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-ffa500.svg)](https://www.conventionalcommits.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](../../LICENSE)
 
-> **Make your app breathe.** Nura.js is a TypeScript-first framework for shipping AI-friendly, accessible, and automation-ready web experiences across frameworks.
+Nura.js keeps agent expectations aligned with your UI across React, Vue, and Svelte. The toolkit offers fuzzy matching, wake-word
+helpers, and contextual confirmation utilities built on a strict TypeScript core.
 
-## ✨ Highlights
+## Highlights
 
-- **Semantic AI Layer** – Describe UI intent with structured metadata that agents and automation tools understand.
-- **Framework Adapters** – First-party packages for React, Vue, and Svelte built on a shared core.
-- **Voice & Multimodal Ready** – Optional voice plugin and lexicon tooling for natural language commands.
-- **DX-Focused** – Strict TypeScript, SOLID-friendly architecture, and ergonomic developer tools.
-- **Accessible by Design** – Encourages ARIA-aligned semantics and inclusive interactions.
+- Intent metadata that agents and automations can reason about.
+- Wake-word stripping, locale detection, numeral parsing, and synonym normalization.
+- React, Vue, and Svelte adapters powered by one shared runtime.
+- Tooling for verification, accessibility, and release hygiene.
 
-## 🚀 Install in 60 Seconds
-
-Pick your package manager:
+## Quick Start
 
 ```bash
-# pnpm
 pnpm add @nura/core
-
-# npm
-npm install @nura/core
-
-# bun
-bun add @nura/core
+pnpm add @nura/plugin-voice @nura/plugin-fuzzy  # optional packages
 ```
 
-### Hello Nura (React)
+Pick an adapter when integrating with a UI framework:
+
+```bash
+pnpm add @nura/react  # or: pnpm add @nura/vue / pnpm add @nura/svelte
+```
+
+Install dependencies when working on the monorepo:
+
+```bash
+pnpm install
+pnpm dev  # or: npm run dev / yarn dev
+```
+
+### Hello Nura example (React)
 
 ```tsx
-import { NuraProvider, useNuraCommand } from '@nura/react'
+import { NuraProvider, useNuraCommand } from '@nura/react';
 
-function App() {
+export function App() {
   useNuraCommand('open-cart', ({ context }) => {
-    console.log('Opening cart for', context.userId)
-  })
+    console.log('Opening cart for', context?.userId);
+  });
 
   return (
     <NuraProvider>
       <button data-nura-command="open-cart">Open cart</button>
     </NuraProvider>
-  )
+  );
 }
 ```
 
-More examples and framework-specific guides live in [`docs/tutorials/recipes.md`](../tutorials/recipes.md).
+## Compatibility
 
-## ✅ Compatibility
+- Node.js 18.18+ (ESM)
+- TypeScript 5.x with `strict` mode enabled
+- React 18/19, Vue 3, and Svelte 4/5 adapters maintained in-tree
 
-- **Runtime:** Node.js 18.18+ (ESM only)
-- **Languages:** TypeScript 5.x with `strict` mode enabled
-- **Frameworks:** Core works with any DOM environment. Official adapters exist for React 18+/19, Vue 3, and Svelte 4/5.
-
-## 📚 Documentation
+## Documentation Map
 
 - [Getting Started](./getting-started.md)
 - [Architecture Overview](../internals/architecture.md)
-- [Recipes & Examples](../tutorials/recipes.md)
-- [Architecture Decision Records](../adr)
-
-Generated API documentation (via TypeDoc) will be published under `docs/api/` during releases.
+- [Recipes and Examples](../tutorials/recipes.md)
+- [Community Guides](../community/index.md)
+- [API Reference](../api/index.md)
 
 Generate local API docs with:
 
@@ -71,23 +72,25 @@ Generate local API docs with:
 pnpm run build:docs
 ```
 
-## 🧭 Roadmap & Project Status
+## Project Status
 
-- Project maturity: **Alpha** – APIs may change, feedback welcome.
-- See [`docs/community/roadmap.md`](../community/roadmap.md) for quarterly goals including i18n, fuzzy matching, devtools, and framework adapters.
+- Maturity: **Alpha** — APIs may change while we gather feedback.
+- Quarterly goals live in [docs/community/roadmap.md](../community/roadmap.md).
 
-## 🧑‍💻 Contributing
+## Contributing
 
-We welcome contributions! Please read [CONTRIBUTING.md](../community/contributing.md) for branch strategy, Conventional Commits, and local development instructions. Issues and feature ideas should start with a Discussion or issue using our templates.
+Read [docs/community/contributing.md](../community/contributing.md) for branching strategy, review expectations, and
+Conventional Commit guidance.
 
-## 🔐 Security
+## Security
 
-Report vulnerabilities privately to [security@nura.dev](mailto:security@nura.dev). See [SECURITY.md](../community/security.md) for supported versions and disclosure timelines.
+Report vulnerabilities privately to [security@nura.dev](mailto:security@nura.dev). See
+[docs/community/security.md](../community/security.md) for supported versions and disclosure timelines.
 
-## 🤝 Support
+## Support
 
-If you have questions, open a Discussion or issue. See [SUPPORT.md](../../SUPPORT.md) for details.
+Open a GitHub Discussion or issue. See [../../SUPPORT.md](../../SUPPORT.md) for the support policy.
 
-## 📄 License
+## License
 
-Released under the [MIT License](./LICENSE) © Nura.js Maintainers.
+Released under the [MIT License](../../LICENSE).

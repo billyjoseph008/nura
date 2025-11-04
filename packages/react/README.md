@@ -1,57 +1,57 @@
 # @nura/react
 
-> Adaptador oficial de React para consumir el runtime de Nura.js con hooks y componentes declarativos.
+Official React adapter for consuming the Nura.js runtime with declarative components and hooks.
 
-## Instalación
+## Installation
 
 ```bash
-npm i @nura/react
-# o
 pnpm add @nura/react
 ```
 
-## Uso mínimo
+## Usage Example
 
 ```tsx
-import { createRegistry } from '@nura/core'
-import { NuraProvider, useNuraAction } from '@nura/react'
+import { createRegistry } from '@nura/core';
+import { NuraProvider, useNuraAction } from '@nura/react';
 
-const registry = createRegistry({ /* acciones y plugins */ })
+const registry = createRegistry({
+  // define actions and agents
+});
 
-function App() {
+export function App() {
   return (
     <NuraProvider registry={registry}>
       <OrdersButton />
     </NuraProvider>
-  )
+  );
 }
 
 function OrdersButton() {
-  const action = useNuraAction('open_orders')
+  const action = useNuraAction('open_orders');
   return (
     <button onClick={() => action?.run?.()} data-nu-act={JSON.stringify(action?.spec)}>
-      Abrir órdenes
+      Open orders
     </button>
-  )
+  );
 }
 ```
 
-## APIs principales
+## Key APIs
 
-* `NuraProvider` — Inyecta el registro de Nura en el árbol de React.
-* `useNura` — Devuelve el runtime `Nura` y helpers para disparar acciones.
-* `useNuraAction` — Resuelve una acción por nombre y expone métodos de ejecución.
-* `useNuraPermission` — Comprueba permisos declarativos en componentes.
-* `NuraElement` — Componente helper que serializa acciones y atributos `data-nu-*`.
+- `NuraProvider` injects the registry into the React tree.
+- `useNura` returns the `Nura` runtime and helpers.
+- `useNuraAction` resolves actions by name and exposes execution helpers.
+- `useNuraPermission` evaluates declarative permissions inside components.
+- `NuraElement` renders helpers that sync `data-nu-*` attributes.
 
-## Tipos
+## Type References
 
-* `NuraProviderProps` — Props del provider con registro y opciones de contexto.
-* `UseNuraReturn` — Resultado del hook `useNura` con runtime y registro.
-* `UseNuraActionOptions` — Opciones para `useNuraAction` (scope, argumentos, etc.).
-* `NuraElementProps` — Props del wrapper que sincroniza atributos accesibles.
+- `NuraProviderProps` — provider configuration for registry and context.
+- `UseNuraReturn` — runtime and registry values from `useNura`.
+- `UseNuraActionOptions` — options for `useNuraAction` such as scope and arguments.
+- `NuraElementProps` — props for the helper component exposing accessible attributes.
 
-## Enlaces
+## Additional Resources
 
-* Repo: [https://github.com/nura-dev/nura](https://github.com/nura-dev/nura)
-* Issues: [https://github.com/nura-dev/nura/issues](https://github.com/nura-dev/nura/issues)
+- Repository: <https://github.com/nura-dev/nura>
+- Issues: <https://github.com/nura-dev/nura/issues>

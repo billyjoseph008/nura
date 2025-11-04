@@ -1,16 +1,14 @@
 # @nura/core
 
-> Núcleo de Nura.js con runtime, entidades y utilidades lingüísticas para interfaces guiadas por agentes.
+Core runtime and linguistic utilities for Nura.js agent ↔ UI integrations.
 
-## Instalación
+## Installation
 
 ```bash
-npm i @nura/core
-# o
 pnpm add @nura/core
 ```
 
-## Uso mínimo
+## Usage Example
 
 ```ts
 import {
@@ -22,7 +20,7 @@ import {
   detectLocale,
   parseNumeral,
   normalizeSynonyms,
-} from '@nura/core'
+} from '@nura/core';
 
 const registry = createRegistry({
   actions: [
@@ -35,40 +33,43 @@ const registry = createRegistry({
       },
     }),
   ],
-})
+});
 
-const nura = new Nura({ registry })
+const nura = new Nura({ registry });
+const context = new ContextManager({ locale: 'es-CR' });
+context.set('customerId', 42);
 
-const context = new ContextManager({ locale: 'es-CR' })
-context.set('customerId', 42)
+const input = 'hey nura abre órdenes';
+const withoutWake = stripWake(input, { wakeWords: ['hey nura'] });
+const locale = detectLocale(withoutWake, ['es-CR', 'en-US']);
+const amount = parseNumeral('quince', locale);
+const normalized = normalizeSynonyms('árbol', locale);
 
-const input = 'hey nura abre órdenes'
-const withoutWake = stripWake(input, { wakeWords: ['hey nura'] })
-const locale = detectLocale(withoutWake, ['es-CR', 'en-US'])
-const amount = parseNumeral('quince', locale)
-const normalized = normalizeSynonyms('Árbol', locale)
-
-await nura.act({ type: 'open', target: 'orders', meta: { desc: `Abrir ${normalized}` } })
+await nura.act({
+  type: 'open',
+  target: 'orders',
+  meta: { desc: `Abrir ${normalized} (${amount})` },
+});
 ```
 
-## APIs principales
+## Key APIs
 
-* `Nura` — Orquesta ejecución de acciones registradas con permisos y telemetría.
-* `createRegistry` — Construye un registro con acciones, entidades y agentes conectados.
-* `ContextManager` — Administra contexto conversacional (locale, sesión, atributos).
-* `stripWake` — Limpia frases detectando palabras de activación configuradas.
-* `detectLocale` — Determina el locale más probable a partir de un texto.
-* `parseNumeral` — Convierte tokens numéricos en valores `number`.
-* `normalizeSynonyms` — Normaliza sinónimos para búsquedas y coincidencias.
+- `Nura` orchestrates registered actions with permission hooks.
+- `createRegistry` builds the registry of actions, entities, and connected agents.
+- `ContextManager` keeps follow-up context and confirmation helpers.
+- `stripWake` normalizes wake phrases.
+- `detectLocale` identifies a locale using token heuristics.
+- `parseNumeral` converts localized numerals to numbers.
+- `normalizeSynonyms` harmonizes synonyms per locale dictionary.
 
-## Tipos
+## Type References
 
-* `NAction` — Representa una acción ejecutable por el runtime.
-* `NRegistry` — Registro central con acciones, plugins y permisos.
-* `NLocale` — Identificador de locale BCP 47 (`'es-CR'`, `'en-US'`, ...).
-* `NAgent` — Plugin que aporta capacidades adicionales al registro.
+- `NAction` — executable action shape.
+- `NRegistry` — registry definition including actions and agents.
+- `NLocale` — BCP 47 locale identifier (`'es-CR'`, `'en-US'`).
+- `NAgent` — plugin extension for the runtime.
 
-## Enlaces
+## Additional Resources
 
-* Repo: [https://github.com/nura-dev/nura](https://github.com/nura-dev/nura)
-* Issues: [https://github.com/nura-dev/nura/issues](https://github.com/nura-dev/nura/issues)
+- Repository: <https://github.com/nura-dev/nura>
+- Issues: <https://github.com/nura-dev/nura/issues>

@@ -1,7 +1,3 @@
-# Tutoriales y ejemplos
+# Tutoriales (español)
 
-Recorridos prácticos para construir experiencias con Nura.js.
-
-- Comienza con las [recetas](./recipes.md) para aprender patrones de comandos, slots y validaciones.
-- Explora el workspace `packages/examples` para demos ejecutables.
-- Comparte tu propio ejemplo con un pull request de la comunidad.
+La localización se actualizará próximamente. Revisa los ejemplos en inglés en [../../tutorials/index.md](/tutorials/index).

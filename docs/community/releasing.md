@@ -15,6 +15,7 @@ packages are published to npm from the `main` branch using
 1. **Verify quality gates**
    - Run `pnpm install` to ensure lockfile consistency.
    - Execute `pnpm run lint`, `pnpm run build`, and `pnpm run test`.
+   - Run `pnpm run docs:check` to lint, check links, and spell-check documentation.
    - Generate API docs with `pnpm run build:docs` and confirm `docs/api/` updates
      are committed.
 2. **Collect changes**
@@ -25,6 +26,7 @@ packages are published to npm from the `main` branch using
      versions, changelogs, and the lockfile.
 4. **Publish**
    - Commit the version bump and push to GitHub.
+   - Run `pnpm run verify:release` locally to exercise builds, packs, and smoke tests.
    - Run `pnpm changeset publish` to publish all packages to npm. This command
      respects the versions generated in the previous step.
 5. **Post-release**
@@ -34,7 +36,6 @@ packages are published to npm from the `main` branch using
 ## Automation Notes
 
 - CI enforces linting, tests, and type checks before allowing merges into `main`.
-- The `release` script defined in `package.json` runs the full versioning and
-  publication flow: `pnpm changeset version && pnpm run build && changeset publish`.
+- Use `pnpm run verify:release` before publishing to cover type checks, builds, packing, and smoke tests.
 - Ensure `docs/api/` output is regenerated whenever public APIs change so that
 documentation stays in sync with the published packages.

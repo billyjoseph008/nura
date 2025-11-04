@@ -1,20 +1,18 @@
 # @nura/plugin-voice
 
-> Agente de voz para Nura.js con detección de wake-word, coincidencia difusa y anotación de intents.
+Voice agent for Nura.js with wake-word comparison, locale detection, and intent scoring.
 
-## Instalación
+## Installation
 
 ```bash
-npm i @nura/plugin-voice
-# o
 pnpm add @nura/plugin-voice
 ```
 
-## Uso mínimo
+## Usage Example
 
 ```ts
-import { createRegistry, defineActionSpec } from '@nura/core'
-import { voiceAgent } from '@nura/plugin-voice'
+import { createRegistry, defineActionSpec } from '@nura/core';
+import { voiceAgent } from '@nura/plugin-voice';
 
 const registry = createRegistry({
   actions: [
@@ -28,30 +26,29 @@ const registry = createRegistry({
     }),
   ],
   agents: [voiceAgent({ wakeWords: ['hey nura'] })],
-})
+});
 
 registry.agents.start('voice', {
   locale: 'es-CR',
   intents: registry.actions.intents(),
-})
+});
 ```
 
-## APIs principales
+## Key APIs
 
-* `voiceAgent` — Registra reconocimiento de voz y coordina intents para un `NRegistry`.
-* `matchUtterance` — Pipeline para puntuar intents según tokens, entidades y wake word.
-* `detectLocale` — Heurística simple para detectar locale a partir de la frase (re-exporta `@nura/core`).
-* `stripWake` — Normalizador de wake-word que limpia frases (re-exportado desde el core).
-* `compareWakeWord` — Comparador difuso de wake-word expuesto para integraciones personalizadas.
+- `voiceAgent` wires recognition, wake configuration, and event emission into a registry.
+- `matchUtterance` scores intents based on phonetic and edit-distance comparisons.
+- `compareWakeWord` compares phrases for wake-word confidence.
+- `stripWake` and `detectLocale` are re-exported from `@nura/core` for convenience.
 
-## Tipos
+## Type References
 
-* `NVoiceOptions` — Configuración del agente (wake words, umbrales, modo dev).
-* `WakeWordInput` — Entrada normalizada para comparar wake words.
-* `NIntent` — Intent derivado del registro listo para reconocimiento.
-* `IntentMatchResult` — Resultado detallado de `matchUtterance` con puntuaciones y tokens.
+- `NVoiceOptions` — configuration for the agent (wake words, thresholds, debug mode).
+- `WakeWordInput` — normalized structure for wake-word checks.
+- `NIntent` — registry intent ready for recognition.
+- `IntentMatchResult` — detailed result from `matchUtterance` including scores and tokens.
 
-## Enlaces
+## Additional Resources
 
-* Repo: [https://github.com/nura-dev/nura](https://github.com/nura-dev/nura)
-* Issues: [https://github.com/nura-dev/nura/issues](https://github.com/nura-dev/nura/issues)
+- Repository: <https://github.com/nura-dev/nura>
+- Issues: <https://github.com/nura-dev/nura/issues>

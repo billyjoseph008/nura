@@ -8,8 +8,8 @@ We provide security updates for the latest minor release of each active major ve
 
 | Version | Supported |
 | ------- | --------- |
-| main    | ✅ |
-| < latest major | ⚠️ security fixes may be backported when feasible |
+| main | Yes |
+| < latest major | Best effort (backported when feasible) |
 
 ## Reporting a Vulnerability
 

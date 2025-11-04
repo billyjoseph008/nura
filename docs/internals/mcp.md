@@ -1,74 +1,79 @@
-# Integración MCP en la demo de Nura
+# MCP Integration in the Nura Demo
 
-Esta guía describe cómo la demo de Vue conecta con servidores MCP mediante un gateway WebSocket y cómo validar la integración extremo a extremo.
+This guide explains how the Vue demo connects to Model Context Protocol (MCP) servers through a WebSocket gateway and how to
+validate the integration end to end.
 
-## Arquitectura
+## Architecture
 
 ```text
 ┌──────────────┐      wss://<gateway>/mcp       ┌─────────────────────┐
-│ Navegador    │ ─────────────────────────────► │ Gateway WebSocket   │
-│ (Vue + Nura) │ ◄───────────────────────────── │ (proxy MCP)         │
+│ Browser      │ ─────────────────────────────► │ WebSocket Gateway   │
+│ (Vue + Nura) │ ◄───────────────────────────── │ (MCP proxy)         │
 └─────┬────────┘                                └─────────┬───────────┘
       │                                                ┌──▼──────────────┐
-      │  window.__nura.act()                          │ Servidor MCP    │
+      │  window.__nura.act()                          │ MCP Server      │
       └──────────────────────────────┐                │ (filesystem,    │
-                                      ▼               │ órdenes, etc.)  │
-                               Registro de Nura       └─────────────────┘
+                                      ▼               │ orders, etc.)  │
+                               Nura Registry          └─────────────────┘
 ```
 
-- El cliente MCP (`src/nura/mcp/client.ts`) abre la conexión WebSocket y expone utilidades para listar resources/tools y ejecutar tools.
-- `src/nura/mcp/registry.ts` mantiene el mapeo seguro entre intents de Nura y herramientas MCP.
-- `src/nura/bootstrap.ts` intercepta `nura.act(...)`, intenta resolver el intent vía MCP y, si falla, vuelve al manejador local.
-- `App.vue` ofrece la UI para conectar, listar y visualizar telemetría.
+- The MCP client (`src/nura/mcp/client.ts`) opens the WebSocket connection and exposes utilities to list resources, list tools,
+  and execute tools.
+- `src/nura/mcp/registry.ts` maintains the allowlist mapping between Nura intents and MCP tools.
+- `src/nura/bootstrap.ts` intercepts `nura.act(...)`, attempts to resolve intents via MCP, and falls back to local handlers if the
+  gateway fails.
+- `App.vue` provides the UI to connect, list resources, and review telemetry.
 
-## Puesta en marcha
+## Bring-Up Steps
 
-1. Instala dependencias en la raíz del repositorio:
+1. Install repository dependencies:
    ```bash
    pnpm install
    ```
-2. Arranca la demo de Vue:
+2. Start the Vue demo:
    ```bash
    pnpm --filter nura-vue-demo dev
    ```
-3. Inicia tu servidor MCP y expón un gateway WebSocket accesible (por defecto `wss://localhost:8787/mcp`).
-4. Abre la demo y establece la URL del gateway en el campo **Gateway WS URL** antes de conectar.
+3. Start your MCP server and expose an accessible WebSocket gateway (default `wss://localhost:8787/mcp`).
+4. Open the demo and set the **Gateway WS URL** field before connecting.
 
-## Mapeos Nura ↔ MCP
+## Nura ↔ MCP Mappings
 
-| Intent Nura (`type::target`) | Tool MCP            | Argumentos                                     |
-| ---------------------------- | ------------------- | ---------------------------------------------- |
-| `open::menu:orders`          | `filesystem.readFile` | `{ path: './data/orders.json' }`               |
-| `delete::order`              | `orders.delete`       | `{ id: <ID numérico proveniente del payload> }` |
+| Nura intent (`type::target`) | MCP tool              | Arguments                                           |
+| ---------------------------- | --------------------- | --------------------------------------------------- |
+| `open::menu:orders`          | `filesystem.readFile` | `{ path: './data/orders.json' }`                    |
+| `delete::order`              | `orders.delete`       | `{ id: <numeric id from the payload> }`             |
 
-> Los argumentos se sanitizan antes de invocar herramientas y sólo se permite ejecutar tools listados en `NURA_TO_MCP`.
+> Arguments are sanitized before invoking tools. Only tools listed in `NURA_TO_MCP` are callable.
 
-## Telemetría relevante
+## Telemetry Events
 
 - `mcp.client.connecting` / `mcp.client.connected` / `mcp.client.disconnected`
 - `mcp.tool.called { name, args, ms }`
 - `mcp.tool.error { name, message }`
 - `nura.act.completed { via: 'mcp' | 'local' }`
 
-Todos los eventos aparecen en el panel lateral de la demo y se pueden consumir vía `window.__nura.telemetry`.
+All events appear in the demo sidebar and are available through `window.__nura.telemetry`.
 
-## Checklist de pruebas manuales
+## Manual Test Checklist
 
-- [ ] **Conexión:** ingresar `wss://localhost:8787/mcp`, pulsar **Conectar MCP** y confirmar el evento `mcp.client.connected`.
-- [ ] **Listado:** con la conexión activa, ejecutar **Listar resources** y **Listar tools** sin errores; validar que se muestra el JSON resultante.
-- [ ] **Intent → Tool (`open`)**: hacer clic en “Órdenes” → verificar evento `mcp.tool.called` con `filesystem.readFile` y latencia registrada.
-- [ ] **Intent → Tool (`delete`)**: enviar “Eliminar orden” con un ID válido → confirmar `mcp.tool.called` (`orders.delete`) y el indicador `via: 'mcp'`.
-- [ ] **Fallback:** detener el gateway MCP y repetir los intents; la telemetría debe indicar `via: 'local'` sin romper la UI.
-- [ ] **Latencia:** revisar los valores `ms` en `mcp.tool.called` (p95 objetivo < 800 ms en local).
-- [ ] **Seguridad:** disparar un intent no mapeado; debe ignorarse o resolverse localmente sin invocar MCP.
+- [ ] **Connection:** enter `wss://localhost:8787/mcp`, click **Connect MCP**, and confirm `mcp.client.connected` telemetry.
+- [ ] **Listing:** while connected, run **List resources** and **List tools** without errors; confirm the JSON payload renders.
+- [ ] **Intent → Tool (open):** select “Orders” and verify `mcp.tool.called` with `filesystem.readFile` and latency data.
+- [ ] **Intent → Tool (delete):** trigger “Delete order” with a valid id; confirm `mcp.tool.called` (`orders.delete`) and
+        `via: 'mcp'`.
+- [ ] **Fallback:** stop the MCP gateway and repeat intents; telemetry should report `via: 'local'` while the UI stays stable.
+- [ ] **Latency:** review `ms` values on `mcp.tool.called` (p95 target under 800 ms in local setups).
+- [ ] **Security:** issue an unmapped intent; it should be ignored or handled locally without invoking MCP.
 
-## Consideraciones de seguridad
+## Security Considerations
 
-- Los argumentos enviados a MCP se filtran para aceptar sólo valores primitivos, arrays y objetos simples.
-- `NURA_TO_MCP` actúa como whitelist estricta: no se ejecutan tools que no estén registrados.
-- Las acciones destructivas (`delete::order`) solicitan confirmación mediante `window.confirm` antes de enviarse.
-- Si una tool falla, se emite `mcp.tool.error` y la ejecución vuelve al manejador local, evitando estados inconsistentes.
+- Arguments sent to MCP are filtered to allow only primitive values, arrays, and plain objects.
+- `NURA_TO_MCP` acts as a strict allowlist. Unlisted tools are never executed.
+- Destructive intents (`delete::order`) prompt for confirmation with `window.confirm` before sending.
+- Failures emit `mcp.tool.error` and fall back to local handlers to prevent inconsistent states.
 
-## Compatibilidad con la demo existente
+## Compatibility with the Existing Demo
 
-Si MCP no está disponible, `maybeRunMcp` devuelve `undefined` y `nura.act` continúa con la lógica original. Los componentes existentes siguen funcionando gracias al fallback local y a la re-asignación de `nura.act` en `installNuraBridge`.
+When MCP is unavailable, `maybeRunMcp` returns `undefined` and `nura.act` continues with the original logic. Existing components
+keep working thanks to the local fallback and the override inside `installNuraBridge`.
