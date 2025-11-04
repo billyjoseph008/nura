@@ -8,7 +8,7 @@ Core primitives for building intent-driven AI workflows in Nura.js applications.
 pnpm add @nura/intents
 ```
 
-## Quick start
+## Quick Start
 
 ```ts
 import {
@@ -47,7 +47,7 @@ const response = await intents.createIntent({
 });
 ```
 
-### Registering new intent types
+### Register new intent types
 
 At application bootstrap you should register all supported intents. A simple helper is to export a function from your host module that wires the registry and receives new specs:
 

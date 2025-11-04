@@ -46,13 +46,14 @@ Nura.js is a modular framework that layers semantic intelligence on top of moder
 
 ## Data Contracts
 
-- `CommandDefinition` – describes intent, slots, guards, and prompts.
-- `CommandContext` – typed context object (user/session/environment data).
-- `CommandResult` – normalized output returned to agents.
+- `NActionSpec` – describes intents, slots, locales, and metadata exposed to adapters.
+- `NContext` – runtime context containing the registry, i18n helpers, and DOM selectors.
+- `NResult` – normalized output returned after executing an action.
 
 ## Extensibility
 
-- Framework adapters share common abstractions for bridging events (`createCommandHandler`).
+- Framework adapters share common abstractions for bridging events through hooks (`useNuraAction`), directives (`v-nu-act`),
+  and Svelte actions (`nuraAction`).
 - Third-party integrations can listen to command lifecycle events, augment lexicons, or extend the DOM indexer.
 
 ## Deployment Considerations

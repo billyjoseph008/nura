@@ -1,43 +1,44 @@
 # @nura/plugin-fuzzy
 
-> Utilidades de coincidencia difusa, fonética y tokenizada utilizadas por Nura.js y sus plugins de voz.
+Fuzzy, phonetic, and token-based matching utilities shared by Nura.js and its voice tooling.
 
-## Instalación
+## Installation
 
 ```bash
-npm i @nura/plugin-fuzzy
-# o
 pnpm add @nura/plugin-fuzzy
 ```
 
-## Uso mínimo
+## Usage Example
 
 ```ts
-import { matchFuzzy, tokenizeAndScore, compareWakeWord } from '@nura/plugin-fuzzy'
+import { matchFuzzy, tokenizeAndScore, compareWakeWord } from '@nura/plugin-fuzzy';
 
-const brands = ['Nura', 'Núria', 'Nero']
-const match = matchFuzzy('nura', brands, { locale: 'es' })
+const brands = ['Nura', 'Núria', 'Nero'];
+const match = matchFuzzy('nura', brands, { locale: 'es' });
 
-const tokens = tokenizeAndScore('abre el modo noche', ['modo noche', 'modo día'])
+const tokens = tokenizeAndScore('abre el modo noche', ['modo noche', 'modo día']);
 
-const wake = compareWakeWord('hey nura', { canonical: 'hey nura', aliases: ['hola nura'] })
+const wake = compareWakeWord('hey nura', {
+  canonical: 'hey nura',
+  aliases: ['hola nura'],
+});
 ```
 
-## APIs principales
+## Key APIs
 
-* `matchFuzzy` — Puntúa candidatos y devuelve la mejor coincidencia según la estrategia seleccionada.
-* `tokenizeAndScore` — Evalúa token por token contra una lista de candidatos y devuelve los mejores empates.
-* `compareWakeWord` — Compara entradas de audio/texto contra palabras de activación canonizadas.
-* `damerauLevenshteinSimilarity` — Similaridad basada en ediciones transpuestas.
+- `matchFuzzy` scores candidates using the selected strategy and locale heuristics.
+- `tokenizeAndScore` evaluates each token against candidate phrases.
+- `compareWakeWord` checks wake-word candidates for hybrid phonetic similarity.
+- `damerauLevenshteinSimilarity` exposes the raw edit-distance helper.
 
-## Tipos
+## Type References
 
-* `FuzzyMatchOpts` — Opciones de estrategia, locale y umbrales.
-* `MatchResult` — Resultado de `matchFuzzy` con estrategia y tokens coincidentes.
-* `TokenScore` — Resultado granular por token utilizado en `tokenizeAndScore`.
-* `FuzzyStrategy` — Estrategias disponibles (`'hybrid'`, `'damerau'`, ...).
+- `FuzzyMatchOpts` — strategy, locale, and threshold options.
+- `MatchResult` — output from `matchFuzzy` including the winning candidate.
+- `TokenScore` — granular token scoring result used by `tokenizeAndScore`.
+- `FuzzyStrategy` — supported strategies (`'hybrid'`, `'damerau'`, ...).
 
-## Enlaces
+## Additional Resources
 
-* Repo: [https://github.com/nura-dev/nura](https://github.com/nura-dev/nura)
-* Issues: [https://github.com/nura-dev/nura/issues](https://github.com/nura-dev/nura/issues)
+- Repository: <https://github.com/nura-dev/nura>
+- Issues: <https://github.com/nura-dev/nura/issues>

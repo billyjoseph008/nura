@@ -1,101 +1,113 @@
 # Recipes
 
-Practical examples for building AI-friendly interfaces with Nura.js.
+Practical examples for agent-aware interfaces built with Nura.js.
 
-## Command with Slots
-
-```ts
-import { defineCommand } from '@nura/core'
-
-export const checkout = defineCommand({
-  id: 'checkout',
-  description: 'Complete the active shopping cart',
-  slots: {
-    paymentMethod: {
-      type: 'enum',
-      values: ['card', 'wallet', 'cash'],
-    },
-    shippingSpeed: {
-      type: 'enum',
-      values: ['standard', 'express'],
-      optional: true,
-    },
-  },
-  run: async ({ slots, context }) => {
-    await context.api.checkout({
-      paymentMethod: slots.paymentMethod,
-      shippingSpeed: slots.shippingSpeed ?? 'standard',
-    })
-    return { status: 'success' }
-  },
-})
-```
-
-## Synonyms & Localization
+## Register an Action with Slots
 
 ```ts
-import { defineLexicon } from '@nura/core'
+import { createRegistry, defineActionSpec } from '@nura/core';
 
-export const lexicon = defineLexicon({
-  intents: {
-    'cart.view': {
-      utterances: {
-        en: ['open cart', 'show basket'],
-        es: ['abrir carrito', 'mostrar cesta'],
+export const registry = createRegistry({
+  actions: [
+    defineActionSpec({
+      name: 'checkout',
+      type: 'intent',
+      target: 'cart',
+      slots: {
+        paymentMethod: {
+          kind: 'enum',
+          values: ['card', 'wallet', 'cash'],
+        },
+        shippingSpeed: {
+          kind: 'enum',
+          values: ['standard', 'express'],
+          optional: true,
+        },
       },
-    },
-  },
-})
+      run: async ({ slots, context }) => {
+        await context.api.checkout({
+          paymentMethod: slots.paymentMethod,
+          shippingSpeed: slots.shippingSpeed ?? 'standard',
+        });
+        return { ok: true };
+      },
+    }),
+  ],
+});
 ```
 
-## Validating Agent Input
+## Normalize Synonyms by Locale
 
 ```ts
-import { useNuraCommand } from '@nura/react'
+import { normalizeSynonyms } from '@nura/core/synonyms';
 
-export function ScheduleMeetingButton() {
-  useNuraCommand('meeting.schedule', {
-    validate: ({ slots }) => {
-      if (!slots.time) {
-        return { valid: false, reason: 'time slot required' }
-      }
-      return { valid: true }
-    },
-    run: async ({ slots, context }) => {
-      await context.calendar.book(slots.time as string)
-      return { status: 'scheduled' }
-    },
-  })
+const normalized = normalizeSynonyms('abre el menú de pedidos', 'es');
+// → "abre el menú de órdenes"
+```
 
-  return (
-    <button data-nura-command="meeting.schedule">
-      Schedule meeting
-    </button>
-  )
+## Parse Numerals inside Commands
+
+```ts
+import { parseNumeral } from '@nura/core/numerals';
+
+const quantity = parseNumeral('quince', 'es');
+// quantity === 15
+```
+
+## Rank Intents with Fuzzy Helpers
+
+```ts
+import { rankCandidates } from '@nura/plugin-fuzzy';
+
+const intents = [
+  { id: 'open.orders', phrase: 'abre el menú de órdenes' },
+  { id: 'delete.order', phrase: 'borra la orden {id}' },
+];
+
+const { best } = rankCandidates('abre el menú de pedidos', intents, {
+  threshold: 0.8,
+  strategy: 'hybrid',
+});
+
+if (best?.score && best.score >= 0.8) {
+  console.log('Matched intent:', best.id);
 }
 ```
 
-## Voice Interaction
+## Wire the Voice Agent
 
 ```ts
-import { createVoiceAgent } from '@nura/plugin-voice'
-import { registry } from './registry'
+import { createRegistry, defineActionSpec } from '@nura/core';
+import { voiceAgent } from '@nura/plugin-voice';
 
-const voiceAgent = createVoiceAgent({ registry })
+const registry = createRegistry({
+  actions: [
+    defineActionSpec({
+      name: 'open_orders',
+      type: 'open',
+      target: 'orders',
+      phrases: {
+        'es-CR': { canonical: ['abre órdenes'], wake: ['hey nura'] },
+      },
+    }),
+  ],
+  agents: [voiceAgent({ wakeWords: ['hey nura'] })],
+});
 
-voiceAgent.listen()
+registry.agents.start('voice', {
+  locale: 'es-CR',
+  intents: registry.actions.intents(),
+});
 ```
 
-- Tie the voice agent into browser speech APIs or native bridges.
-- Use lexicon synonyms to improve recognition accuracy.
-
-## Debugging with Devtools
+## Highlight Annotated Elements
 
 ```ts
-import { mountLexiconOverlay } from '@nura/devtools-lexicon'
-import { registry } from './registry'
+import { DOMIndexer } from '@nura/dom';
 
-mountLexiconOverlay({ registry })
+const indexer = new DOMIndexer({ autoScan: true });
+console.log(indexer.getAll().map(el => el.dataset.nuAct));
 ```
 
-The overlay highlights annotated elements, unresolved commands, and slot coverage across locales.
+Pair these snippets with the adapters in `@nura/react`, `@nura/vue`, and `@nura/svelte` to connect DOM metadata with agent
+handlers.

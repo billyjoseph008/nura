@@ -1,6 +1,7 @@
 # @nura/transport-http
 
-HTTP transport bindings for the Nura intents service. This package ships an Express router that exposes the generic `/ai/intents` endpoints with rate limiting, idempotency, and JSON-only responses.
+HTTP transport bindings for the Nura intents service. Ships an Express router that exposes `/ai/intents` endpoints with rate
+limiting, idempotency, and JSON responses.
 
 ## Installation
 
@@ -8,7 +9,7 @@ HTTP transport bindings for the Nura intents service. This package ships an Expr
 pnpm add @nura/transport-http
 ```
 
-## Usage
+## Usage Example
 
 ```ts
 import express from 'express';
@@ -43,4 +44,4 @@ const app = express();
 app.use(createIntentRouter({ service }));
 ```
 
-The host application is responsible for registering `NIntentSpec` definitions before mounting the router. See `@nura/intents` for more information on the registry contract.
+The host application registers `NIntentSpec` definitions before mounting the router. See `@nura/intents` for registry details.

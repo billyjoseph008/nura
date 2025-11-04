@@ -1,62 +1,51 @@
 # Nura.js
 
 [![CI](https://github.com/nura-dev/nura/actions/workflows/ci.yml/badge.svg)](https://github.com/nura-dev/nura/actions/workflows/ci.yml)
-[![npm](https://img.shields.io/npm/v/@nura/core?label=%40nura%2Fcore)](https://www.npmjs.com/package/@nura/core)
+[![npm](https://img.shields.io/npm/v/@nura/core.svg?label=%40nura%2Fcore)](https://www.npmjs.com/package/@nura/core)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
 
-> **Make your app breathe.**  
-> Nura.js is a TypeScript-first framework that helps your **agents** and **UIs** talk to each other. It ships fuzzy and phonetic matching, wake-word helpers, simple i18n, lightweight context, and UI adapters for React, Vue, and Svelte.
+Nura.js helps your agent interfaces stay in sync with your UI. The toolkit includes fuzzy and phonetic matching, wake-word and
+voice helpers, lightweight context storage, and adapters for React, Vue, and Svelte.
 
----
+## About Nura
 
-## ✨ Origin
+Nura was created by **Billy Joseph Rojas Vindas** (Costa Rica). The name blends *nur* (ray of light, in Tatar) and *pneuma*
+(breath) after a formative trip to the Republic of Tatarstan, Russia. The framework focuses on ergonomic agent ↔ UI
+interactions across modern web stacks.
 
-- Developer: **Billy Joseph Rojas Vindas** — Costa Rica.
-- Inspired by a trip to the **Republic of Tatarstan (Russia)**.
-- The name **“Nura”** blends **_nur_** (a “ray of light” in Tatar) and **_pneuma_** (“breath”). The idea: let your app **breathe**—be understandable for both people and agents.
+## Key Capabilities
 
----
+- Intent and action descriptions that agents can reason about.
+- Wake-word stripping, locale detection, numeral parsing, and synonym normalization.
+- Hybrid Damerau–Levenshtein and phonetic ranking for fuzzy matching.
+- Context manager for confirmations and follow-up state.
+- First-party UI adapters for React, Vue, and Svelte.
 
-## 🌟 Highlights
+## Quick Start
 
-- **Agent-Friendly Semantics** – Describe intent and actions so tools/agents can cooperate with your UI.
-- **Fuzzy + Phonetic** – Damerau + soundex-style strategies to catch what users meant.
-- **Wake & Voice-Ready** – Wake-word helpers and voice plugin scaffolding.
-- **Context & i18n** – Natural confirmations (“yes, do it”), numeral parsing (ES/EN), and simple locale detection.
-- **UI Adapters** – First-party packages for **React**, **Vue**, and **Svelte**.
-
----
-
-## 🚀 Quick Start
+Requirements: Node.js 18.18+ and pnpm 8+ (via Corepack).
 
 ```bash
-# core
 pnpm add @nura/core
-
-# optional plugins
-pnpm add @nura/plugin-voice @nura/plugin-fuzzy
-
-# pick a UI adapter (optional):
-pnpm add @nura/react   # or @nura/vue / @nura/svelte
+pnpm add @nura/plugin-voice @nura/plugin-fuzzy  # optional packages
+pnpm add @nura/react  # or: pnpm add @nura/vue / pnpm add @nura/svelte
 ```
 
-Workspace bootstrap (if you cloned the monorepo):
+If you cloned the monorepo:
 
 ```bash
 pnpm install
-pnpm run verify:release   # typecheck → build → pack → smoke tests
+pnpm dev  # or: npm run dev / yarn dev
+pnpm build  # or: npm run build / yarn build
 ```
 
----
-
-## 🧩 Core in 60 seconds
-
-**Wake stripping + numerals + synonyms:**
+### Minimal core example
 
 ```ts
 import { stripWake } from '@nura/core/wake';
 import { parseNumeral } from '@nura/core/numerals';
 import { normalizeSynonyms } from '@nura/core/synonyms';
+import { ContextManager } from '@nura/core/context';
 
 const text = stripWake('ok nora open orders menu', {
   aliases: ['nora', 'lura', 'nula'],
@@ -66,73 +55,24 @@ const text = stripWake('ok nora open orders menu', {
 
 const id = parseNumeral('quince', 'es'); // → 15
 const normalized = normalizeSynonyms('abre el menú de pedidos', 'es');
-// → normalizes "pedidos" to "ordenes" (per dictionary)
-```
-
-**Context & confirmations:**
-
-```ts
-import { ContextManager } from '@nura/core/context';
+// → normalizes "pedidos" to "órdenes" per locale dictionary
 
 const ctx = new ContextManager();
-ctx.save({ type: 'delete', target: 'order', payload: { id: 15 } });
-
-// later…
+ctx.save({ type: 'delete', target: 'order', payload: { id } });
 const next = ctx.maybeConfirm('sí, elimínala');
-// → { type: 'delete', target: 'order', payload: { id: 15 } } | null
+// → { type: 'delete', target: 'order', payload: { id: 15 } }
 ```
 
----
+## Adapters Matrix
 
-## 🎙️ Voice & Fuzzy (Plugins)
-
-**Wake check (voice):**
-
-```ts
-import { compareWakeWord } from '@nura/plugin-voice';
-
-const res = compareWakeWord(
-  'okey nuera',
-  { canonical: 'nura', aliases: ['nora', 'lura'] },
-  { strategy: 'hybrid', minConfidence: 0.7, locale: 'es' }
-);
-if (res && res.score >= 0.7) {
-  // wake matched, parse the rest of the utterance…
-}
-```
-
-**Fuzzy ranking (hybrid Damerau + phonetic):**
-
-```ts
-import { rankCandidates } from '@nura/plugin-fuzzy';
-
-const intents = [
-  { id: 'open::menu:orders', phrase: 'abre el menu de ordenes' },
-  { id: 'delete::order', phrase: 'borra la orden {id}' },
-];
-
-const { best } = rankCandidates('abre el menú de pedidos', intents, {
-  threshold: 0.8,
-  strategy: 'hybrid',
-});
-
-if (best?.score >= 0.8) {
-  // → open::menu:orders
-}
-```
-
----
-
-## 🧱 UI Adapters
-
-**React**
-
-```tsx
+| Adapter | Package | Quick usage |
+| --- | --- | --- |
+| React | `@nura/react` | ```tsx
 import { NuraProvider, useNuraCommand } from '@nura/react';
 
-export default function App() {
+export function App() {
   useNuraCommand('open-cart', ({ context }) => {
-    console.log('Opening cart for user', context?.userId);
+    console.log('Opening cart for', context?.userId);
   });
   return (
     <NuraProvider>
@@ -140,14 +80,10 @@ export default function App() {
     </NuraProvider>
   );
 }
-```
-
-**Vue**
-
-```vue
+``` |
+| Vue | `@nura/vue` | ```vue
 <script setup lang="ts">
 import { NuraProvider } from '@nura/vue';
-// Listens to data-nura-command="..." and provides helpers via provide/inject
 </script>
 
 <template>
@@ -155,11 +91,8 @@ import { NuraProvider } from '@nura/vue';
     <button data-nura-command="open-cart">Open cart</button>
   </NuraProvider>
 </template>
-```
-
-**Svelte**
-
-```svelte
+``` |
+| Svelte | `@nura/svelte` | ```svelte
 <script lang="ts">
   import { NuraProvider } from '@nura/svelte';
 </script>
@@ -167,64 +100,48 @@ import { NuraProvider } from '@nura/vue';
 <NuraProvider>
   <button data-nura-command="open-cart">Open cart</button>
 </NuraProvider>
-```
+``` |
 
----
+## Release Verification
 
-## 🛠️ Monorepo scripts (maintainers)
+Run the bundled smoke tests before publishing packages.
 
 ```bash
+pnpm run verify:release
+```
+
+## Troubleshooting
+
+- **Node version:** Ensure `node -v` reports 18.18 or later. Use Corepack to pin pnpm if needed.
+- **Executable permissions:** On Unix systems run `chmod +x scripts/*.ts` when cloning on case-sensitive file systems.
+- **Firewall rules:** Allow outbound HTTPS access for MCP hosts referenced in `docs/internals/mcp.md`.
+
+## Repository Layout
+
+```
+apps/                 Playground applications that do not gate CI
+packages/core         Core runtime (wake, numerals, synonyms, context, locale)
+packages/plugin-*     Voice and fuzzy matching plugins
+packages/react|vue|svelte
+scripts/              Maintenance and smoke-test tooling
+```
+
+## Contributing
+
+Follow [CONTRIBUTING.md](./CONTRIBUTING.md) and Conventional Commits. Typical workflow:
+
+```bash
+pnpm install
 pnpm -w run typecheck
 pnpm -w run build
-pnpm run verify:release   # typecheck → build → pack → smoke
+pnpm run smoke
 ```
 
----
+## Security
 
-## 🗂️ Layout
+Report vulnerabilities privately to [security@nura.dev](mailto:security@nura.dev). See [SECURITY.md](./SECURITY.md) for
+process details.
 
-```
-apps/                 # playgrounds and sandboxes (don’t block main CI)
-packages/core         # core runtime (wake, numerals, synonyms, context, i18n)
-packages/plugin-*     # voice, fuzzy
-packages/dom          # DOM helpers
-packages/react|vue|svelte
-scripts/              # smoke, maintenance, etc.
-```
+## License
 
----
-
-## ✅ Compatibility
-
-- **Runtime:** Node.js 18.18+
-- **TypeScript:** 5.x (`strict`)
-- **UI:** React 18/19, Vue 3, Svelte 4/5
-
----
-
-## 🤝 Contributing
-
-- Conventional Commits encouraged
-- Local flow:
-
-  ```bash
-  pnpm i
-  pnpm -w run typecheck
-  pnpm -w run build
-  pnpm run smoke
-  ```
-
-- Please review **CONTRIBUTING.md** and our **CODE_OF_CONDUCT.md**.
-
----
-
-## 🔐 Security
-
-Private reports: **[security@nura.dev](mailto:security@nura.dev)**
-See **SECURITY.md** for response times and disclosure policy.
-
----
-
-## 📄 License
-
-[MIT](./LICENSE) © **Billy Joseph Rojas Vindas** — Costa Rica
+[MIT](./LICENSE)

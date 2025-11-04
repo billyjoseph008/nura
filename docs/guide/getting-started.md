@@ -5,7 +5,7 @@ Welcome to Nura.js! This guide walks you through installing dependencies, bootst
 ## Prerequisites
 
 - Node.js 18.18 or newer
-- pnpm 8+ (via Corepack) or npm/bun if you prefer
+- pnpm 8+ (via Corepack). npm and bun work with equivalent commands.
 - TypeScript 5 with `strict` mode enabled
 
 ## Install the Core Package
@@ -14,11 +14,13 @@ Welcome to Nura.js! This guide walks you through installing dependencies, bootst
 pnpm add @nura/core
 ```
 
-Want framework helpers?
+Optional packages:
 
-- React: `pnpm add @nura/react`
-- Vue: `pnpm add @nura/vue`
-- Svelte: `pnpm add @nura/svelte`
+- Voice tools: `pnpm add @nura/plugin-voice`
+- Fuzzy helpers: `pnpm add @nura/plugin-fuzzy`
+- React adapter: `pnpm add @nura/react`
+- Vue adapter: `pnpm add @nura/vue`
+- Svelte adapter: `pnpm add @nura/svelte`
 
 ## Initialize Nura.js
 
@@ -61,13 +63,13 @@ export function CheckoutButton() {
 
 ```bash
 pnpm install
-pnpm dev
+pnpm dev  # or: npm run dev / yarn dev
 ```
 
 `pnpm dev` uses TurboRepo to run all active workspaces in watch mode.
 
 ## Next Steps
 
-- Explore the [Recipes](./recipes.md) for more complex scenarios like slot filling and validation.
-- Read the [Architecture](./architecture.md) overview to understand the building blocks.
-- Track upcoming features on the [Roadmap](./roadmap.md).
+- Explore the [recipes](../tutorials/recipes.md) for slot filling, wake words, and adapters.
+- Read the [architecture](../internals/architecture.md) overview to understand the building blocks.
+- Track upcoming features on the [roadmap](../community/roadmap.md).
