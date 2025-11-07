@@ -1,34 +1,29 @@
-# @nura/client
+# @nurajs/client
 
-TypeScript SDK for interacting with the Nura intents HTTP API. Includes a minimal `AiClient` wrapper and a UI dispatcher to route
-`NIntentResult` payloads to UI handlers.
+Interact with the Nura AI intent surface from any UI or automation client.
 
 ## Installation
 
 ```bash
-pnpm add @nura/client
+pnpm add @nurajs/client
 ```
 
 ## Usage Example
 
 ```ts
-import { AiClient, UiDispatcher } from '@nura/client';
+import { AiClient, UiDispatcher } from '@nurajs/client'
 
-const client = new AiClient('https://api.example.com');
-const dispatcher = new UiDispatcher();
+const client = new AiClient('https://api.example.com/ai')
+const dispatcher = new UiDispatcher()
 
-dispatcher.register('app.echo.result', payload => {
-  console.log('Render payload', payload);
-});
+dispatcher.register('ui.open', (_, hint) => openModal(hint?.target))
 
-const response = await client.createIntent({
-  type: 'app.echo',
-  payload: { message: 'Hello from the SDK' },
-});
-
-if (response.result) {
-  dispatcher.dispatch(response.result);
-}
+const { id } = await client.createIntent({
+  type: 'orders.create',
+  payload: { id: 'o-88' }
+})
+await client.approveIntent(id)
+dispatcher.dispatch(await client.getIntentResult(id))
 ```
 
-See `@nura/intents` and `@nura/transport-http` for server-side integration details.
+See [`@nurajs/intents`](../../docs/modules/intents.md) and [`@nurajs/transport-http`](../../docs/modules/transport-http.md) for server-side integration.

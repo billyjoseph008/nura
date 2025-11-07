@@ -1,47 +1,31 @@
-# @nura/transport-http
+# @nurajs/transport-http
 
-HTTP transport bindings for the Nura intents service. Ships an Express router that exposes `/ai/intents` endpoints with rate
-limiting, idempotency, and JSON responses.
+Expose the Nura intent service over hardened HTTP endpoints with JSON-only enforcement, idempotency, and rate limiting.
 
 ## Installation
 
 ```bash
-pnpm add @nura/transport-http
+pnpm add @nurajs/transport-http
 ```
 
 ## Usage Example
 
 ```ts
-import express from 'express';
-import {
-  AjvSchemaValidator,
-  ConsoleAuditLogger,
-  Hex36IdGenerator,
-  InMemoryIntentRegistry,
-  InMemoryIntentStore,
-  IntentService,
-  SimplePolicyEngine,
-} from '@nura/intents';
-import { createIntentRouter } from '@nura/transport-http';
+import express from 'express'
+import { registerType } from '@nurajs/intents'
+import { buildRouter } from '@nurajs/transport-http'
 
-const registry = new InMemoryIntentRegistry();
-const service = new IntentService(
-  registry,
-  new AjvSchemaValidator(),
-  new SimplePolicyEngine(),
-  new InMemoryIntentStore(),
-  new ConsoleAuditLogger(),
-  new Hex36IdGenerator(),
-);
+registerType({
+  type: 'orders.create',
+  schema: { type: 'object', required: ['id'], properties: { id: { type: 'string' } } }
+})
 
-registry.register({
-  type: 'app.echo',
-  schema: { type: 'object', properties: { message: { type: 'string' } }, required: ['message'] },
-  executor: async payload => ({ type: 'app.echo.result', payload }),
-});
-
-const app = express();
-app.use(createIntentRouter({ service }));
+const app = express()
+app.use(buildRouter({
+  cors: { origins: ['https://yourapp.com'] },
+  limits: { body: '64kb' },
+  rateLimit: { windowMs: 60_000, max: 60 }
+}))
 ```
 
-The host application registers `NIntentSpec` definitions before mounting the router. See `@nura/intents` for registry details.
+See the [module docs](../../docs/modules/transport-http.md) for endpoint details.

@@ -48,6 +48,7 @@ export class IntentService {
     if (decision.status === 'requires_approval') {
       return {
         intentId,
+        id: intentId,
         status: 'requires_approval',
         message: decision.reason,
       };
@@ -56,7 +57,7 @@ export class IntentService {
     const result = await this.resolveResult(spec, input, intentId);
     await this.store.approve(intentId, result);
     this.log.info({ event: 'intent.create.executed', intentId, type: input.type });
-    return { intentId, status: 'done', result };
+    return { intentId, id: intentId, status: 'done', result };
   }
 
   async approveIntent(intentId: string): Promise<NIntentResponse> {
@@ -68,14 +69,33 @@ export class IntentService {
 
     if (existing.status === 'done' && existing.result) {
       this.log.info({ event: 'intent.approve.idempotent', intentId });
-      return { intentId, status: 'done', result: existing.result };
+      return { intentId, id: intentId, status: 'done', result: existing.result };
     }
 
     const spec = this.requireSpec(existing.intent.type);
     const result = await this.resolveResult(spec, existing.intent, intentId);
     await this.store.approve(intentId, result);
     this.log.info({ event: 'intent.approve.completed', intentId, type: existing.intent.type });
-    return { intentId, status: 'done', result };
+    return { intentId, id: intentId, status: 'done', result };
+  }
+
+  async getIntent(intentId: string): Promise<NIntentResponse> {
+    const existing = await this.store.read(intentId);
+    if (!existing) {
+      this.log.warn({ event: 'intent.read.missing', intentId });
+      throw new IntentNotFoundError(intentId);
+    }
+
+    return {
+      intentId,
+      id: intentId,
+      status: existing.status,
+      ...(existing.result ? { result: existing.result } : {}),
+    };
+  }
+
+  async executeIntent(intentId: string): Promise<NIntentResponse> {
+    return this.approveIntent(intentId);
   }
 
   private requireSpec(type: string): NIntentSpec {

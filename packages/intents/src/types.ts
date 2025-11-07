@@ -25,6 +25,7 @@ export interface NIntentResult {
 
 export interface NIntentResponse {
   intentId: string;
+  id?: string;
   status: NIntentStatus;
   message?: string;
   result?: NIntentResult;
@@ -35,7 +36,9 @@ export interface NIntentSpec {
   schema: object;
   policy?: {
     requiresApproval?: boolean;
+    allowTenants?: string[];
     roles?: string[];
+    predicate?: (context?: NIntent['context']) => boolean;
   };
   mapper?: (payload: unknown, uiHint?: NIntent['uiHint']) => NIntentResult;
   executor?: (payload: unknown, ctx?: NIntent['context']) => Promise<NIntentResult>;
@@ -44,6 +47,7 @@ export interface NIntentSpec {
 export interface IntentRegistry {
   register(spec: NIntentSpec): void;
   get(type: string): NIntentSpec | undefined;
+  list(): NIntentSpec[];
 }
 
 export interface SchemaValidator {

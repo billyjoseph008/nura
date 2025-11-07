@@ -3,6 +3,11 @@ import { ContextManager } from '@nura/core/context'
 import { detectLocale } from '@nura/core/locale'
 import { parseNumeral } from '@nura/core/numerals'
 import { normalizeSynonyms } from '@nura/core/synonyms'
+import {
+  registerType,
+  createIntent as createAiIntent,
+  getIntentResult as getAiIntentResult,
+} from '@nurajs/intents'
 
 function log(title, value) {
   console.log(title, typeof value === 'string' ? value : JSON.stringify(value))
@@ -38,6 +43,23 @@ try {
   ctx.save({ type: 'delete', target: 'order', payload: { id: 15 } })
   log('[context yes]', !!ctx.maybeConfirm('sí, elimínala')) // true
   log('[context noop]', !!ctx.maybeConfirm('no gracias'))   // false
+
+  // 6) AI intents bridge
+  registerType({
+    type: 'smoke.echo',
+    schema: {
+      type: 'object',
+      properties: { text: { type: 'string' } },
+      required: ['text'],
+      additionalProperties: false,
+    },
+    mapper: payload => ({ type: 'ui.toast', payload, uiHint: { variant: 'info' } }),
+  })
+
+  const intent = await createAiIntent({ type: 'smoke.echo', payload: { text: 'hello-intent' } })
+  log('[intent create]', intent.status)
+  const uiResult = await getAiIntentResult(intent.id ?? intent.intentId)
+  log('[intent result]', uiResult.type)
 
   console.log('✅ Smoke OK')
 } catch (e) {

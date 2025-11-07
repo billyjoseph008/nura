@@ -23,10 +23,17 @@
   },
   "dependencies": {
     "@nura/core": "workspace:*",
-    "@nura/plugin-voice": "workspace:*"
+    "@nura/plugin-voice": "workspace:*",
+    "@nurajs/intents": "workspace:*",
+    "@nurajs/transport-http": "workspace:*",
+    "@nurajs/client": "workspace:*",
+    "express": "^4.19.2"
   },
   "devDependencies": {
     "@nura/core": "workspace:*",
-    "@nura/plugin-voice": "workspace:*"
+    "@nura/plugin-voice": "workspace:*",
+    "@nurajs/intents": "workspace:*",
+    "@nurajs/transport-http": "workspace:*",
+    "@nurajs/client": "workspace:*"
   }
 }

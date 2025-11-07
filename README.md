@@ -2,6 +2,9 @@
 
 [![CI](https://github.com/nura-dev/nura/actions/workflows/ci.yml/badge.svg)](https://github.com/nura-dev/nura/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/@nura/core.svg?label=%40nura%2Fcore)](https://www.npmjs.com/package/@nura/core)
+[![npm](https://img.shields.io/npm/v/@nurajs/intents.svg?label=%40nurajs%2Fintents)](https://www.npmjs.com/package/@nurajs/intents)
+[![npm](https://img.shields.io/npm/v/@nurajs/transport-http.svg?label=%40nurajs%2Ftransport-http)](https://www.npmjs.com/package/@nurajs/transport-http)
+[![npm](https://img.shields.io/npm/v/@nurajs/client.svg?label=%40nurajs%2Fclient)](https://www.npmjs.com/package/@nurajs/client)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
 
 Nura.js helps your agent interfaces stay in sync with your UI. The toolkit includes fuzzy and phonetic matching, wake-word and
@@ -9,9 +12,7 @@ voice helpers, lightweight context storage, and adapters for React, Vue, and Sve
 
 ## About Nura
 
-Nura was created by **Billy Joseph Rojas Vindas** (Costa Rica). The name blends *nur* (ray of light, in Tatar) and *pneuma*
-(breath) after a formative trip to the Republic of Tatarstan, Russia. The framework focuses on ergonomic agent ↔ UI
-interactions across modern web stacks.
+Nura was created by **Billy Rojas**. The name blends *nur* (light ray) and *pneuma* (breath). The framework focuses on ergonomic agent ↔ UI interactions across modern web stacks.
 
 ## Key Capabilities
 
@@ -20,6 +21,97 @@ interactions across modern web stacks.
 - Hybrid Damerau–Levenshtein and phonetic ranking for fuzzy matching.
 - Context manager for confirmations and follow-up state.
 - First-party UI adapters for React, Vue, and Svelte.
+
+## What’s New
+
+Nura now ships an AI–to–UI bridge:
+- **@nurajs/intents** – Define and validate JSON intents (Intent → Approval → Execute).
+- **@nurajs/transport-http** – Hardened HTTP surface for AI tools (`POST /ai/intents`, `POST /ai/intents/:id/approve`).
+- **@nurajs/client** – Agnostic SDK (`AiClient`) plus a simple `UiDispatcher` for UI reactions.
+
+## AI Intents & Secure HTTP Surface
+
+Nura closes the loop from AI tools to safe, user-facing UI:
+
+```
+AI / Client → @nurajs/transport-http → @nurajs/intents → (App Host / Executor) → @nurajs/client → UI
+```
+
+**Key ideas**
+- Describe *what* to do as a JSON intent (e.g., `orders.delete`).
+- Validate payloads with JSON Schema before execution.
+- Apply approval/security policy.
+- Emit UI-friendly results that your front end can map to actions (open modal, route, toast, etc.).
+
+```ts
+// hello-intent.ts
+import { registerType } from '@nurajs/intents'
+
+registerType({
+  type: 'orders.create',
+  schema: { type: 'object', required: ['id'], properties: { id: { type: 'string' } } },
+  policy: { requiresApproval: false },
+  mapper: payload => ({ type: 'ui.open', payload, uiHint: { target: 'orderForm' } }),
+  executor: async payload => ({ ok: true, createdId: payload.id })
+})
+```
+
+### Quick Start (AI Path)
+
+```bash
+pnpm add @nurajs/intents @nurajs/transport-http @nurajs/client
+```
+
+**Register an intent type**
+
+```ts
+// app/intents/orders.ts
+import { registerType } from '@nurajs/intents'
+
+registerType({
+  type: 'orders.create',
+  schema: { type: 'object', required: ['id','items'], properties: {
+    id: { type: 'string' }, items: { type: 'array', items: { type: 'string' } }
+  }},
+  policy: { requiresApproval: true },
+  mapper: payload => ({ type: 'ui.open', payload, uiHint: { target: 'orderForm' } }),
+  executor: async payload => ({ ok: true, createdId: payload.id })
+})
+```
+
+**Expose the public HTTP surface**
+
+```ts
+// app/http/ai.ts (express-ish or hono)
+import { buildRouter } from '@nurajs/transport-http'
+export const aiRouter = buildRouter({
+  cors: { origins: ['https://yourapp.com'] },
+  limits: { body: '64kb' },
+  rateLimit: { windowMs: 60000, max: 60 }
+})
+// mount under /ai
+```
+
+**Consume from the client**
+
+```ts
+import { AiClient, UiDispatcher } from '@nurajs/client'
+const client = new AiClient('/ai')
+const dispatcher = new UiDispatcher()
+dispatcher.register('ui.open', (_, hint) => openModal(hint?.target))
+
+const { id } = await client.createIntent({ type: 'orders.create', payload: { id:'o-1', items:['coffee'] } })
+await client.approveIntent(id) // if policy requires it
+const result = await client.getIntentResult(id)
+dispatcher.dispatch(result)
+```
+
+### Security Notes
+
+* JSON-only (`Content-Type: application/json`)
+* CORS allowlist, size limits, IP/tenant rate limiting
+* Idempotency via `Idempotency-Key`
+* Runtime validation with JSON Schema
 
 ## Quick Start
 
@@ -121,8 +213,12 @@ pnpm run verify:release
 ```
 apps/                 Playground applications that do not gate CI
 packages/core         Core runtime (wake, numerals, synonyms, context, locale)
+packages/intents      AI intent registry, policy, and execution helpers
+packages/transport-http  Express router exposing the AI surface
+packages/client       Thin HTTP client and UI dispatcher
 packages/plugin-*     Voice and fuzzy matching plugins
 packages/react|vue|svelte
+packages/examples     Reference scenarios (e.g., ai-intents-starter)
 scripts/              Maintenance and smoke-test tooling
 ```
 
@@ -145,3 +241,5 @@ process details.
 ## License
 
 [MIT](./LICENSE)
+
+<!-- 🇨🇷 -->

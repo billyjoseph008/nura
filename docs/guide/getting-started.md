@@ -59,6 +59,38 @@ export function CheckoutButton() {
 - `data-nura-command` exposes the action to agents, screen readers, and other tools.
 - `useNuraCommand` registers the handler with context-aware metadata.
 
+## Connect AI intents to the UI
+
+Bridge your automation flow with [`@nurajs/intents`](../modules/intents.md), [`@nurajs/transport-http`](../modules/transport-http.md), and [`@nurajs/client`](../modules/client.md).
+
+```ts
+// intents/orders.ts
+import { registerType } from '@nurajs/intents'
+
+registerType({
+  type: 'orders.create',
+  schema: { type: 'object', required: ['id'], properties: { id: { type: 'string' } } },
+  mapper: payload => ({ type: 'ui.open', payload, uiHint: { target: 'orderForm' } })
+})
+```
+
+```ts
+// http/ai.ts
+import { buildRouter } from '@nurajs/transport-http'
+export const aiRouter = buildRouter({ limits: { body: '64kb' } })
+```
+
+```ts
+// client
+import { AiClient, UiDispatcher } from '@nurajs/client'
+const client = new AiClient('/ai')
+const dispatcher = new UiDispatcher()
+
+dispatcher.register('ui.open', (_, hint) => openModal(hint?.target))
+const { id } = await client.createIntent({ type: 'orders.create', payload: { id: 'o-42' } })
+dispatcher.dispatch(await client.getIntentResult(id))
+```
+
 ## Run Locally
 
 ```bash

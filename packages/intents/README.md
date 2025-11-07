@@ -1,64 +1,37 @@
-# @nura/intents
+# @nurajs/intents
 
-Core primitives for building intent-driven AI workflows in Nura.js applications. This package provides the contracts, default adapters, and the `IntentService` orchestration to create and approve intents.
+Define, validate, and execute AI intents using Nura’s Intent → Approval → Execute (IAE) loop.
 
 ## Installation
 
 ```bash
-pnpm add @nura/intents
+pnpm add @nurajs/intents
 ```
 
 ## Quick Start
 
 ```ts
-import {
-  AjvSchemaValidator,
-  Hex36IdGenerator,
-  InMemoryIntentRegistry,
-  InMemoryIntentStore,
-  IntentService,
-  SimplePolicyEngine,
-  ConsoleAuditLogger,
-} from '@nura/intents';
+import { registerType, createIntent, getIntentResult } from '@nurajs/intents'
 
-const registry = new InMemoryIntentRegistry();
-const validator = new AjvSchemaValidator();
-const policies = new SimplePolicyEngine();
-const store = new InMemoryIntentStore();
-const log = new ConsoleAuditLogger();
-const ids = new Hex36IdGenerator();
-
-const intents = new IntentService(registry, validator, policies, store, log, ids);
-
-registry.register({
-  type: 'app.echo',
+registerType({
+  type: 'orders.create',
   schema: {
     type: 'object',
-    properties: { message: { type: 'string' } },
-    required: ['message'],
+    required: ['id'],
+    properties: { id: { type: 'string' } },
     additionalProperties: false,
   },
-  executor: async payload => ({ type: 'app.echo.result', payload }),
-});
+  mapper: payload => ({ type: 'ui.open', payload, uiHint: { target: 'orderForm' } })
+})
 
-const response = await intents.createIntent({
-  type: 'app.echo',
-  payload: { message: 'hello' },
-});
+const { id } = await createIntent({ type: 'orders.create', payload: { id: 'o-100' } })
+const result = await getIntentResult(id)
 ```
 
-### Register new intent types
+## Policies
 
-At application bootstrap you should register all supported intents. A simple helper is to export a function from your host module that wires the registry and receives new specs:
+- `requiresApproval` to queue intents pending approval
+- `allowTenants` and role-based gates
+- `predicate(context)` for custom approvals
 
-```ts
-import type { IntentRegistry, NIntentSpec } from '@nura/intents';
-
-export function registerType(registry: IntentRegistry, spec: NIntentSpec): void {
-  registry.register(spec);
-}
-```
-
-## API surface
-
-Only the symbols exported from `src/index.ts` are considered public. Everything else is internal and may change without notice.
+See the [module docs](../../docs/modules/intents.md) for the full API.
