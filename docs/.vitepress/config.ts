@@ -18,6 +18,16 @@ const sharedHead: HeadConfig[] = [
 ]
 
 const enSidebar: DefaultTheme.Sidebar = {
+  '/modules/': [
+    {
+      text: 'Modules',
+      items: [
+        { text: 'Intents', link: '/modules/intents' },
+        { text: 'Transport HTTP', link: '/modules/transport-http' },
+        { text: 'Client', link: '/modules/client' },
+      ],
+    },
+  ],
   '/guide/': [
     {
       text: 'Guide',
@@ -109,6 +119,7 @@ const esSidebar: DefaultTheme.Sidebar = {
 
 const sharedNavEn: DefaultTheme.NavItem[] = [
   { text: 'Home', link: '/' },
+  { text: 'Modules', link: '/modules/intents' },
   { text: 'Guide', link: '/guide/introduction' },
   { text: 'API', link: '/api/' },
   { text: 'Examples', link: '/tutorials/recipes' },

@@ -4,33 +4,41 @@ import {
   IntentError,
   IntentService,
   NoopRateLimiter,
+  intentService as defaultIntentService,
   type IdempotencyStore,
   type NIntent,
   type NIntentResponse,
   type RateLimiter,
-} from '@nura/intents';
+} from '@nurajs/intents';
 
-export interface IntentRouterOptions {
-  service: IntentService;
-  rateLimiter?: RateLimiter;
-  idempotencyStore?: IdempotencyStore;
-  idempotencyTtlSeconds?: number;
-  cors?: { allowOrigins: string[] };
-  bodyLimit?: string;
+export interface RateLimitConfig {
+  windowMs: number;
+  max: number;
 }
+
+export interface BuildRouterOptions {
+  service?: IntentService;
+  cors?: { origins: string[] };
+  limits?: { body?: string };
+  rateLimit?: RateLimiter | RateLimitConfig;
+  idempotency?: { store: IdempotencyStore; ttlSeconds?: number };
+}
+
+export type IntentRouterOptions = BuildRouterOptions;
 
 const DEFAULT_BODY_LIMIT = '64kb';
 const DEFAULT_IDEMPOTENCY_TTL = 30;
 
-export function createIntentRouter(options: IntentRouterOptions): Router {
+export function buildRouter(options: BuildRouterOptions = {}): Router {
   const router = Router();
-  const rateLimiter = options.rateLimiter ?? new NoopRateLimiter();
-  const bodyLimit = options.bodyLimit ?? DEFAULT_BODY_LIMIT;
-  const idempotencyStore = options.idempotencyStore;
-  const idempotencyTtl = options.idempotencyTtlSeconds ?? DEFAULT_IDEMPOTENCY_TTL;
+  const service = options.service ?? defaultIntentService;
+  const rateLimiter = createRateLimiter(options.rateLimit);
+  const bodyLimit = options.limits?.body ?? DEFAULT_BODY_LIMIT;
+  const idempotencyStore = options.idempotency?.store;
+  const idempotencyTtl = options.idempotency?.ttlSeconds ?? DEFAULT_IDEMPOTENCY_TTL;
 
   if (options.cors) {
-    router.use(createCorsMiddleware(options.cors.allowOrigins));
+    router.use(createCorsMiddleware(options.cors.origins));
   }
 
   router.use((req, res, next) => {
@@ -68,7 +76,7 @@ export function createIntentRouter(options: IntentRouterOptions): Router {
         ttl: idempotencyTtl,
         request: req,
         scope: 'create',
-        handler: () => options.service.createIntent(intent),
+        handler: () => service.createIntent(intent),
         respond: response => {
           res.status(200).json(response);
         },
@@ -88,11 +96,21 @@ export function createIntentRouter(options: IntentRouterOptions): Router {
         ttl: idempotencyTtl,
         request: req,
         scope: `approve:${id}`,
-        handler: () => options.service.approveIntent(id),
+        handler: () => service.approveIntent(id),
         respond: response => {
           res.status(200).json(response);
         },
       });
+    }),
+  );
+
+  router.get(
+    '/ai/intents/:id',
+    createRateLimitMiddleware(rateLimiter),
+    asyncHandler(async (req, res) => {
+      const { id } = req.params;
+      const response = await service.getIntent(id);
+      res.status(200).json(response);
     }),
   );
 
@@ -105,6 +123,10 @@ export function createIntentRouter(options: IntentRouterOptions): Router {
   });
 
   return router;
+}
+
+export function createIntentRouter(options: IntentRouterOptions = {}): Router {
+  return buildRouter(options);
 }
 
 function enforceJsonContentType(req: Request, res: Response, next: NextFunction) {
@@ -130,6 +152,19 @@ function createRateLimitMiddleware(rateLimiter: RateLimiter) {
 
     next();
   };
+}
+
+function createRateLimiter(input: RateLimitConfig | RateLimiter | undefined): RateLimiter {
+  if (!input) {
+    return new NoopRateLimiter();
+  }
+
+  if (typeof (input as RateLimiter).check === 'function') {
+    return input as RateLimiter;
+  }
+
+  const config = input as RateLimitConfig;
+  return new WindowRateLimiter(config.windowMs, config.max);
 }
 
 function asyncHandler(fn: (req: Request, res: Response, next: NextFunction) => Promise<void>) {
@@ -177,6 +212,29 @@ function createCorsMiddleware(allowOrigins: string[]) {
     }
     next();
   };
+}
+
+class WindowRateLimiter implements RateLimiter {
+  private readonly hits = new Map<string, { count: number; expiresAt: number }>();
+
+  constructor(private readonly windowMs: number, private readonly max: number) {}
+
+  async check(key: string): Promise<boolean> {
+    const now = Date.now();
+    const entry = this.hits.get(key);
+    if (!entry || entry.expiresAt <= now) {
+      this.hits.set(key, { count: 1, expiresAt: now + this.windowMs });
+      return true;
+    }
+
+    if (entry.count >= this.max) {
+      return false;
+    }
+
+    entry.count += 1;
+    this.hits.set(key, entry);
+    return true;
+  }
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {

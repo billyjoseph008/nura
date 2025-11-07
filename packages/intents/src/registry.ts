@@ -10,4 +10,8 @@ export class InMemoryIntentRegistry implements IntentRegistry {
   get(type: string): NIntentSpec | undefined {
     return this.specs.get(type);
   }
+
+  list(): NIntentSpec[] {
+    return Array.from(this.specs.values());
+  }
 }

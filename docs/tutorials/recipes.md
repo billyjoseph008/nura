@@ -2,6 +2,8 @@
 
 Practical examples for agent-aware interfaces built with Nura.js.
 
+- Explore the [AI intents recipe](../recipes/ai-intents.md) for bridging AI-driven UI flows.
+
 ## Register an Action with Slots
 
 ```ts

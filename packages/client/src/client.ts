@@ -1,4 +1,4 @@
-import type { NIntent, NIntentResponse, NIntentResult } from '@nura/intents';
+import type { NIntent, NIntentResponse, NIntentResult } from '@nurajs/intents';
 
 export class AiClient {
   constructor(private readonly baseUrl: string, private readonly fetchImpl: typeof fetch = globalThis.fetch) {
@@ -21,6 +21,21 @@ export class AiClient {
     });
   }
 
+  async getIntent(intentId: string): Promise<NIntentResponse> {
+    return this.send(`/ai/intents/${encodeURIComponent(intentId)}`, {
+      method: 'GET',
+    });
+  }
+
+  async getIntentResult(intentId: string): Promise<NIntentResult> {
+    const response = await this.getIntent(intentId);
+    if (!response.result) {
+      throw new Error('Intent is not complete yet');
+    }
+
+    return response.result;
+  }
+
   private async send(path: string, init: RequestInit): Promise<NIntentResponse> {
     const url = new URL(path, ensureTrailingSlash(this.baseUrl));
     const response = await this.fetchImpl(url, {
@@ -41,6 +56,10 @@ export class AiClient {
 
     if (!response.ok) {
       throw new Error(payload.message ?? payload.error ?? 'Request failed');
+    }
+
+    if (!payload.id) {
+      payload.id = payload.intentId;
     }
 
     return payload;

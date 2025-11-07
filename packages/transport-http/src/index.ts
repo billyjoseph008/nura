@@ -1,2 +1,2 @@
-export type { IntentRouterOptions } from './router.js';
-export { createIntentRouter } from './router.js';
+export type { BuildRouterOptions, IntentRouterOptions, RateLimitConfig } from './router.js';
+export { buildRouter, createIntentRouter } from './router.js';

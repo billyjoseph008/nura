@@ -32,3 +32,14 @@ export { ConsoleAuditLogger } from './logger.js';
 export { Hex36IdGenerator } from './id-generator.js';
 export { NoopRateLimiter } from './rate-limit.js';
 export { InMemoryIdempotencyStore } from './idempotency.js';
+export {
+  intentService,
+  registerType,
+  listTypes,
+  getType,
+  createIntent,
+  approveIntent,
+  executeIntent,
+  getIntent,
+  getIntentResult,
+} from './runtime.js';

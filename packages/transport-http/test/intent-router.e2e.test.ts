@@ -12,8 +12,8 @@ import {
   NoopRateLimiter,
   type RateLimiter,
   SimplePolicyEngine,
-} from '@nura/intents';
-import { createIntentRouter } from '../src/router.js';
+} from '@nurajs/intents';
+import { buildRouter } from '../src/router.js';
 
 describe('createIntentRouter', () => {
   let executions = 0;
@@ -59,10 +59,10 @@ describe('createIntentRouter', () => {
 
     app = express();
     app.use(
-      createIntentRouter({
+      buildRouter({
         service,
-        rateLimiter: new NoopRateLimiter(),
-        idempotencyStore: new InMemoryIdempotencyStore(),
+        rateLimit: new NoopRateLimiter(),
+        idempotency: { store: new InMemoryIdempotencyStore(), ttlSeconds: 60 },
       }),
     );
   });
@@ -137,10 +137,10 @@ describe('createIntentRouter', () => {
     const limitedApp = express();
     const limiter = new DenyRateLimiter();
     limitedApp.use(
-      createIntentRouter({
+      buildRouter({
         service,
-        rateLimiter: limiter,
-        idempotencyStore: new InMemoryIdempotencyStore(),
+        rateLimit: limiter,
+        idempotency: { store: new InMemoryIdempotencyStore(), ttlSeconds: 30 },
       }),
     );
 
@@ -152,6 +152,24 @@ describe('createIntentRouter', () => {
 
     expect(response.status).toBe(429);
     expect(response.body.error).toBe('rate_limited');
+  });
+  it('retrieves intent status via GET', async () => {
+    const createResponse = await request(app)
+      .post('/ai/intents')
+      .set('Content-Type', 'application/json')
+      .set('Accept', 'application/json')
+      .send({ type: 'echo.intent', payload: { message: 'read me' } });
+
+    const intentId = createResponse.body.intentId;
+    expect(intentId).toBeTruthy();
+
+    const getResponse = await request(app)
+      .get(`/ai/intents/${intentId}`)
+      .set('Accept', 'application/json');
+
+    expect(getResponse.status).toBe(200);
+    expect(getResponse.body.status).toBe('done');
+    expect(getResponse.body.result).toMatchObject({ type: 'echo.intent.result' });
   });
 });
 
