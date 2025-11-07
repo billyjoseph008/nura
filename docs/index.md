@@ -8,10 +8,10 @@ description: "A next-generation framework that synchronizes your AI agents and u
 [![npm](https://img.shields.io/npm/v/@nura/core.svg?label=%40nura%2Fcore)](https://www.npmjs.com/package/@nura/core)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
 
-**Nura.js** is a next-generation toolkit that brings your **AI agents** and **UI layers** into perfect harmony.  
+**Nura.js** is a next-generation toolkit that brings your **AI agents** and **UI layers** into perfect harmony.
 It handles fuzzy and phonetic matching, intent mapping, context flow, and multimodal adapters — empowering your interfaces to *listen, understand, and act*.
 
-> “Built for a future where apps don’t just respond — they converse.”  
+> “Create a world where apps feel profoundly human—so present and gentle you could swear they almost breathe.”
 > — *Billy Rojas, Creator of Nura.js*
 
 ## 🌌 About Nura
@@ -209,7 +209,7 @@ Nura.js is not just a framework; it’s the connective tissue for conversational
 
 Let agents whisper and interfaces breathe.
 Let context flow like light through glass.
-**“Construye un mundo donde las apps sean lo más humanas posible, donde sientas que casi respiran.”**
+**"Create a world where apps feel profoundly human—so present and gentle you could swear they almost breathe."**
 
 ## 🌠 Stay Connected
 

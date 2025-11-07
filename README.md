@@ -5,7 +5,7 @@
 
 **Nura.js** harmonizes AI agents and UI layers so teams can build interfaces that listen, understand, and act. Born from the ideals of *nur* (light) and *pneuma* (breath), it carries Billy Rojas’s vision of living, conversational software.
 
-> “Built for a future where apps don’t just respond — they converse.”
+> “Create a world where apps feel profoundly human—so present and gentle you could swear they almost breathe.”
 
 ## Core Features
 
@@ -78,4 +78,4 @@ const next = ctx.maybeConfirm('sí, elimínala');
 - Report vulnerabilities: [security@nura.dev](mailto:security@nura.dev)
 - License: [MIT](./LICENSE)
 
-**“Construye un mundo donde las apps sean lo más humanas posible, donde sientas que casi respiran.”**
+**"Create a world where apps feel profoundly human—so present and gentle you could swear they almost breathe."**
