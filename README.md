@@ -1,121 +1,23 @@
-# Nura.js
+# Nura.js — The Agent-UI Bridge
 
-[![CI](https://github.com/nura-dev/nura/actions/workflows/ci.yml/badge.svg)](https://github.com/nura-dev/nura/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/@nura/core.svg?label=%40nura%2Fcore)](https://www.npmjs.com/package/@nura/core)
-[![npm](https://img.shields.io/npm/v/@nurajs/intents.svg?label=%40nurajs%2Fintents)](https://www.npmjs.com/package/@nurajs/intents)
-[![npm](https://img.shields.io/npm/v/@nurajs/transport-http.svg?label=%40nurajs%2Ftransport-http)](https://www.npmjs.com/package/@nurajs/transport-http)
-[![npm](https://img.shields.io/npm/v/@nurajs/client.svg?label=%40nurajs%2Fclient)](https://www.npmjs.com/package/@nurajs/client)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
 
-Nura.js helps your agent interfaces stay in sync with your UI. The toolkit includes fuzzy and phonetic matching, wake-word and
-voice helpers, lightweight context storage, and adapters for React, Vue, and Svelte.
+**Nura.js** harmonizes AI agents and UI layers so teams can build interfaces that listen, understand, and act. Born from the ideals of *nur* (light) and *pneuma* (breath), it carries Billy Rojas’s vision of living, conversational software.
 
-## About Nura
+> “Built for a future where apps don’t just respond — they converse.”
 
-Nura was created by **Billy Rojas**. The name blends *nur* (light ray) and *pneuma* (breath). The framework focuses on ergonomic agent ↔ UI interactions across modern web stacks.
+## Core Features
 
-## Key Capabilities
-
-- Intent and action descriptions that agents can reason about.
-- Wake-word stripping, locale detection, numeral parsing, and synonym normalization.
-- Hybrid Damerau–Levenshtein and phonetic ranking for fuzzy matching.
-- Context manager for confirmations and follow-up state.
-- First-party UI adapters for React, Vue, and Svelte.
-
-## What’s New
-
-Nura now ships an AI–to–UI bridge:
-- **@nurajs/intents** – Define and validate JSON intents (Intent → Approval → Execute).
-- **@nurajs/transport-http** – Hardened HTTP surface for AI tools (`POST /ai/intents`, `POST /ai/intents/:id/approve`).
-- **@nurajs/client** – Agnostic SDK (`AiClient`) plus a simple `UiDispatcher` for UI reactions.
-
-## AI Intents & Secure HTTP Surface
-
-Nura closes the loop from AI tools to safe, user-facing UI:
-
-```
-AI / Client → @nurajs/transport-http → @nurajs/intents → (App Host / Executor) → @nurajs/client → UI
-```
-
-**Key ideas**
-- Describe *what* to do as a JSON intent (e.g., `orders.delete`).
-- Validate payloads with JSON Schema before execution.
-- Apply approval/security policy.
-- Emit UI-friendly results that your front end can map to actions (open modal, route, toast, etc.).
-
-```ts
-// hello-intent.ts
-import { registerType } from '@nurajs/intents'
-
-registerType({
-  type: 'orders.create',
-  schema: { type: 'object', required: ['id'], properties: { id: { type: 'string' } } },
-  policy: { requiresApproval: false },
-  mapper: payload => ({ type: 'ui.open', payload, uiHint: { target: 'orderForm' } }),
-  executor: async payload => ({ ok: true, createdId: payload.id })
-})
-```
-
-### Quick Start (AI Path)
-
-```bash
-pnpm add @nurajs/intents @nurajs/transport-http @nurajs/client
-```
-
-**Register an intent type**
-
-```ts
-// app/intents/orders.ts
-import { registerType } from '@nurajs/intents'
-
-registerType({
-  type: 'orders.create',
-  schema: { type: 'object', required: ['id','items'], properties: {
-    id: { type: 'string' }, items: { type: 'array', items: { type: 'string' } }
-  }},
-  policy: { requiresApproval: true },
-  mapper: payload => ({ type: 'ui.open', payload, uiHint: { target: 'orderForm' } }),
-  executor: async payload => ({ ok: true, createdId: payload.id })
-})
-```
-
-**Expose the public HTTP surface**
-
-```ts
-// app/http/ai.ts (express-ish or hono)
-import { buildRouter } from '@nurajs/transport-http'
-export const aiRouter = buildRouter({
-  cors: { origins: ['https://yourapp.com'] },
-  limits: { body: '64kb' },
-  rateLimit: { windowMs: 60000, max: 60 }
-})
-// mount under /ai
-```
-
-**Consume from the client**
-
-```ts
-import { AiClient, UiDispatcher } from '@nurajs/client'
-const client = new AiClient('/ai')
-const dispatcher = new UiDispatcher()
-dispatcher.register('ui.open', (_, hint) => openModal(hint?.target))
-
-const { id } = await client.createIntent({ type: 'orders.create', payload: { id:'o-1', items:['coffee'] } })
-await client.approveIntent(id) // if policy requires it
-const result = await client.getIntentResult(id)
-dispatcher.dispatch(result)
-```
-
-### Security Notes
-
-* JSON-only (`Content-Type: application/json`)
-* CORS allowlist, size limits, IP/tenant rate limiting
-* Idempotency via `Idempotency-Key`
-* Runtime validation with JSON Schema
+- **Intent Engine** — Define, validate, and approve structured intents across agents and services.
+- **Wake & Voice Tools** — Strip wake words, parse numerals, and harmonize phonetics for natural conversations.
+- **Locale Intelligence** — Handle multilingual synonyms, numerals, and cultural nuances out of the box.
+- **Reactive Context** — Persist, confirm, and replay context with lightweight storage primitives.
+- **UI Adapters** — Drop-in bridges for React, Vue, and Svelte to sync agent actions with components.
 
 ## Quick Start
 
-Requirements: Node.js 18.18+ and pnpm 8+ (via Corepack).
+Requirements: Node.js ≥ 18.18, pnpm ≥ 8.
 
 ```bash
 pnpm add @nura/core
@@ -131,7 +33,7 @@ pnpm dev  # or: npm run dev / yarn dev
 pnpm build  # or: npm run build / yarn build
 ```
 
-### Minimal core example
+## Minimal Example
 
 ```ts
 import { stripWake } from '@nura/core/wake';
@@ -155,91 +57,25 @@ const next = ctx.maybeConfirm('sí, elimínala');
 // → { type: 'delete', target: 'order', payload: { id: 15 } }
 ```
 
-## Adapters Matrix
+## Modules
 
-| Adapter | Package | Quick usage |
-| --- | --- | --- |
-| React | `@nura/react` | ```tsx
-import { NuraProvider, useNuraCommand } from '@nura/react';
+- **@nura/core** — Wake helpers, numerals, synonyms, and context manager.
+- **@nura/intents** — Intent → Approval → Execute flows with JSON Schema validation.
+- **@nura/transport-http** — Secure HTTP surface with rate limiting and hardened endpoints.
+- **@nura/client** — Unified SDK + dispatcher for UI reactions.
+- **@nura/react | @nura/vue | @nura/svelte** — Framework adapters tuned for conversational UX.
 
-export function App() {
-  useNuraCommand('open-cart', ({ context }) => {
-    console.log('Opening cart for', context?.userId);
-  });
-  return (
-    <NuraProvider>
-      <button data-nura-command="open-cart">Open cart</button>
-    </NuraProvider>
-  );
-}
-``` |
-| Vue | `@nura/vue` | ```vue
-<script setup lang="ts">
-import { NuraProvider } from '@nura/vue';
-</script>
+## Docs & Community
 
-<template>
-  <NuraProvider>
-    <button data-nura-command="open-cart">Open cart</button>
-  </NuraProvider>
-</template>
-``` |
-| Svelte | `@nura/svelte` | ```svelte
-<script lang="ts">
-  import { NuraProvider } from '@nura/svelte';
-</script>
+- Documentation: [docs/index.md](./docs/index.md)
+- Discord: [#](#)
+- GitHub: [https://github.com/nura-dev/nura](https://github.com/nura-dev/nura)
+- X / Twitter: [#](#)
+- Website: [https://nura.dev](https://nura.dev)
 
-<NuraProvider>
-  <button data-nura-command="open-cart">Open cart</button>
-</NuraProvider>
-``` |
+## Security & License
 
-## Release Verification
+- Report vulnerabilities: [security@nura.dev](mailto:security@nura.dev)
+- License: [MIT](./LICENSE)
 
-Run the bundled smoke tests before publishing packages.
-
-```bash
-pnpm run verify:release
-```
-
-## Troubleshooting
-
-- **Node version:** Ensure `node -v` reports 18.18 or later. Use Corepack to pin pnpm if needed.
-- **Executable permissions:** On Unix systems run `chmod +x scripts/*.ts` when cloning on case-sensitive file systems.
-- **Firewall rules:** Allow outbound HTTPS access for MCP hosts referenced in `docs/internals/mcp.md`.
-
-## Repository Layout
-
-```
-apps/                 Playground applications that do not gate CI
-packages/core         Core runtime (wake, numerals, synonyms, context, locale)
-packages/intents      AI intent registry, policy, and execution helpers
-packages/transport-http  Express router exposing the AI surface
-packages/client       Thin HTTP client and UI dispatcher
-packages/plugin-*     Voice and fuzzy matching plugins
-packages/react|vue|svelte
-packages/examples     Reference scenarios (e.g., ai-intents-starter)
-scripts/              Maintenance and smoke-test tooling
-```
-
-## Contributing
-
-Follow [CONTRIBUTING.md](./CONTRIBUTING.md) and Conventional Commits. Typical workflow:
-
-```bash
-pnpm install
-pnpm -w run typecheck
-pnpm -w run build
-pnpm run smoke
-```
-
-## Security
-
-Report vulnerabilities privately to [security@nura.dev](mailto:security@nura.dev). See [SECURITY.md](./SECURITY.md) for
-process details.
-
-## License
-
-[MIT](./LICENSE)
-
-<!-- 🇨🇷 -->
+**“Construye un mundo donde las apps sean lo más humanas posible, donde sientas que casi respiran.”**
