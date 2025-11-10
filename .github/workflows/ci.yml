@@ -1,15 +1,32 @@
 name: nura-ci
 on: [push, pull_request]
+
 jobs:
-  build-core:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with: { version: 9 }
+
       - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: 'pnpm' }
-      - run: pnpm install
-      - run: pnpm -w run typecheck
-      - run: pnpm -w run build
-      - run: pnpm run smoke
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Enable Corepack & pin PNPM
+        run: |
+          npm i -g corepack
+          corepack enable
+          corepack prepare pnpm@8.15.0 --activate
+          pnpm -v
+
+      - name: Install
+        run: pnpm install
+
+      - name: Typecheck
+        run: pnpm -w run typecheck
+
+      - name: Build
+        run: pnpm -w run build
+
+      - name: Smoke
+        run: pnpm run smoke
